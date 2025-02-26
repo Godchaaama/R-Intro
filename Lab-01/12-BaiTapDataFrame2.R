@@ -84,3 +84,14 @@ missCO2[is.na(missCO2$conc), ]
 missCO2$weightNumber <- as.numeric(sub( "kg", "", missCO2$weight))
 
 missCO2$weightNumber2 <- as.numeric(substring(missCO2$weight, 1, nchar(missCO2$weight)-2))
+
+
+# Lưu DATA FRAME vào một tệp CSV
+write.csv(missCO2, "missCO2.csv", row.names = TRUE)
+
+# Lưu DATA FRAME vào một tệp RDS (định dạng R)
+saveRDS(missCO2, "missCO2.rds")
+
+# Lưu nhiều đối tượng vào một tệp RData
+save(iris, mtcars, file = "multiple_datasets.RData")
+KẾT LUẬN
