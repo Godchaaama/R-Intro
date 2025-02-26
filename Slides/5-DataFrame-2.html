@@ -12,7 +12,7 @@
 <meta name="author" content="ThS. Lê Nhật Tùng" />
 
 
-<title>KHUNG DỮ LIỆU (DATA FRAMES) PHẦN 2</title>
+<title>DATA FRAME (DATA FRAMES) PHẦN 2</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1549,30 +1549,29 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">KHUNG DỮ LIỆU (DATA FRAMES) PHẦN 2</h1>
+<h1 class="title toc-ignore">DATA FRAME (DATA FRAMES) PHẦN 2</h1>
 <h4 class="author">ThS. Lê Nhật Tùng</h4>
 
 </div>
 
 
-<div id="khung-dữ-liệu-data-frame" class="section level1">
-<h1>KHUNG DỮ LIỆU (DATA FRAME)</h1>
+<div id="data-frame" class="section level1">
+<h1>DATA FRAME</h1>
 <p>Cấu trúc được sử dụng để lưu trữ dữ liệu ở dạng bảng (cấu trúc phổ
 biến nhất trong phân tích dữ liệu thống kê và học máy). Nó có thể được
 xem như là một danh sách các vector có độ dài bằng nhau (thường có tên
 duy nhất). Đây là cấu trúc dữ liệu cơ bản quan trọng nhất trong môi
 trường tidyverse.</p>
-<div id="tạo-khung-dữ-liệu" class="section level2">
-<h2>TẠO KHUNG DỮ LIỆU</h2>
-<p>Đối tượng khung dữ liệu được tạo ra bằng hàm
-<code>data.frame()</code>, nhận các vector có độ dài bằng nhau làm đầu
-vào (có thể có các kiểu dữ liệu khác nhau). Khung dữ liệu cũng có thể
-được tạo bằng cách chuyển đổi từ ma trận với hàm
-<code>as.data.frame()</code>.</p>
+<div id="tạo-data-frame" class="section level2">
+<h2>TẠO DATA FRAME</h2>
+<p>Đối tượng DATA FRAME được tạo ra bằng hàm <code>data.frame()</code>,
+nhận các vector có độ dài bằng nhau làm đầu vào (có thể có các kiểu dữ
+liệu khác nhau). DATA FRAME cũng có thể được tạo bằng cách chuyển đổi từ
+ma trận với hàm <code>as.data.frame()</code>.</p>
 <p>Các vector trong data.frame được lưu trữ theo chiều dọc và tên của
-các vector gốc được lưu trữ làm tên cột. Khung dữ liệu là một lưu trữ dữ
+các vector gốc được lưu trữ làm tên cột. DATA FRAME là một lưu trữ dữ
 liệu dạng bảng (giống như trong Excel).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Tạo khung dữ liệu</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Tạo DATA FRAME</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co"># Các vector phải có độ dài bằng nhau, nhưng có thể có kiểu dữ liệu khác nhau</span></span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>column1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)</span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>column2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Anna&quot;</span>, <span class="st">&quot;Tom&quot;</span>, <span class="st">&quot;Sue&quot;</span>)</span>
@@ -1596,11 +1595,11 @@ liệu dạng bảng (giống như trong Excel).</p>
 ## 2       2  Tom    TRUE
 ## 3       3  Sue   FALSE</code></pre>
 </div>
-<div id="lấy-giá-trị-từ-khung-dữ-liệu" class="section level2">
-<h2>LẤY GIÁ TRỊ TỪ KHUNG DỮ LIỆU</h2>
+<div id="lấy-giá-trị-từ-data-frame" class="section level2">
+<h2>LẤY GIÁ TRỊ TỪ DATA FRAME</h2>
 <p>Vector tên cần phải tương thích với chiều của dữ liệu được đặt
 tên.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Lấy dữ liệu từ khung dữ liệu</span></span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Lấy dữ liệu từ DATA FRAME</span></span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co"># Cách 1 - sử dụng chỉ số như trong ma trận</span></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>dataset1[<span class="dv">3</span>, <span class="dv">2</span>]  <span class="co"># hàng 3, cột 2</span></span></code></pre></div>
@@ -1696,15 +1695,15 @@ về cánh hoa (petal) và đài hoa (sepal).</p>
 ##                 
 ## </code></pre>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="co"># Các hàm hữu ích khác</span></span>
-<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="fu">dim</span>(iris)  <span class="co"># kích thước của khung dữ liệu (số hàng, số cột)</span></span></code></pre></div>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="fu">dim</span>(iris)  <span class="co"># kích thước của DATA FRAME (số hàng, số cột)</span></span></code></pre></div>
 <pre><code>## [1] 150   5</code></pre>
 <div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">names</span>(iris)  <span class="co"># tên của các cột</span></span></code></pre></div>
 <pre><code>## [1] &quot;Sepal.Length&quot; &quot;Sepal.Width&quot;  &quot;Petal.Length&quot; &quot;Petal.Width&quot;  &quot;Species&quot;</code></pre>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">class</span>(iris)  <span class="co"># lớp của đối tượng</span></span></code></pre></div>
 <pre><code>## [1] &quot;data.frame&quot;</code></pre>
 </div>
-<div id="các-thao-tác-cơ-bản-với-khung-dữ-liệu" class="section level2">
-<h2>CÁC THAO TÁC CƠ BẢN VỚI KHUNG DỮ LIỆU</h2>
+<div id="các-thao-tác-cơ-bản-với-data-frame" class="section level2">
+<h2>CÁC THAO TÁC CƠ BẢN VỚI DATA FRAME</h2>
 <div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="co"># Chọn một tập con của dữ liệu</span></span>
 <span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a>small_iris <span class="ot">&lt;-</span> iris[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="fu">c</span>(<span class="st">&quot;Sepal.Length&quot;</span>, <span class="st">&quot;Species&quot;</span>)]</span>
 <span id="cb37-3"><a href="#cb37-3" tabindex="-1"></a>small_iris</span></code></pre></div>
@@ -1760,12 +1759,12 @@ về cánh hoa (petal) và đài hoa (sepal).</p>
 ## 2 versicolor        5.936
 ## 3  virginica        6.588</code></pre>
 </div>
-<div id="lưu-khung-dữ-liệu" class="section level2">
-<h2>LƯU KHUNG DỮ LIỆU</h2>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># Lưu khung dữ liệu vào một tệp CSV</span></span>
+<div id="lưu-data-frame" class="section level2">
+<h2>LƯU DATA FRAME</h2>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># Lưu DATA FRAME vào một tệp CSV</span></span>
 <span id="cb47-2"><a href="#cb47-2" tabindex="-1"></a><span class="fu">write.csv</span>(iris, <span class="st">&quot;iris_data.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a></span>
-<span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a><span class="co"># Lưu khung dữ liệu vào một tệp RDS (định dạng R)</span></span>
+<span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a><span class="co"># Lưu DATA FRAME vào một tệp RDS (định dạng R)</span></span>
 <span id="cb47-5"><a href="#cb47-5" tabindex="-1"></a><span class="fu">saveRDS</span>(iris, <span class="st">&quot;iris_data.rds&quot;</span>)</span>
 <span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a></span>
 <span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a><span class="co"># Lưu nhiều đối tượng vào một tệp RData</span></span>
@@ -1773,12 +1772,12 @@ về cánh hoa (petal) và đài hoa (sepal).</p>
 </div>
 <div id="kết-luận" class="section level2">
 <h2>KẾT LUẬN</h2>
-<p>Khung dữ liệu (data frame) là cấu trúc dữ liệu cơ bản và quan trọng
-nhất trong R, đặc biệt trong phân tích dữ liệu và học máy. Chúng cung
-cấp một cách linh hoạt để lưu trữ và thao tác với dữ liệu dạng bảng, với
-các cột có thể có các kiểu dữ liệu khác nhau.</p>
+<p>DATA FRAME (data frame) là cấu trúc dữ liệu cơ bản và quan trọng nhất
+trong R, đặc biệt trong phân tích dữ liệu và học máy. Chúng cung cấp một
+cách linh hoạt để lưu trữ và thao tác với dữ liệu dạng bảng, với các cột
+có thể có các kiểu dữ liệu khác nhau.</p>
 <p>Trong phần tiếp theo, chúng ta sẽ tìm hiểu về các kỹ thuật nâng cao
-hơn để thao tác với khung dữ liệu, bao gồm việc sử dụng các gói trong
+hơn để thao tác với DATA FRAME, bao gồm việc sử dụng các gói trong
 tidyverse như dplyr để xử lý dữ liệu hiệu quả hơn.</p>
 </div>
 </div>
