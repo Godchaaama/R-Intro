@@ -1,0 +1,147 @@
+---
+title: "DATA FRAME (DATA FRAMES) PHẦN 2"
+author: "ThS. Lê Nhật Tùng"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# DATA FRAME
+
+Cấu trúc được sử dụng để lưu trữ dữ liệu ở dạng bảng (cấu trúc phổ biến nhất trong phân tích dữ liệu thống kê và học máy). Nó có thể được xem như là một danh sách các vector có độ dài bằng nhau (thường có tên duy nhất). Đây là cấu trúc dữ liệu cơ bản quan trọng nhất trong môi trường tidyverse.
+
+## TẠO DATA FRAME
+
+Đối tượng DATA FRAME được tạo ra bằng hàm `data.frame()`, nhận các vector có độ dài bằng nhau làm đầu vào (có thể có các kiểu dữ liệu khác nhau). DATA FRAME cũng có thể được tạo bằng cách chuyển đổi từ ma trận với hàm `as.data.frame()`.
+
+Các vector trong data.frame được lưu trữ theo chiều dọc và tên của các vector gốc được lưu trữ làm tên cột. DATA FRAME là một lưu trữ dữ liệu dạng bảng (giống như trong Excel).
+
+```{r}
+# Tạo DATA FRAME
+# Các vector phải có độ dài bằng nhau, nhưng có thể có kiểu dữ liệu khác nhau
+column1 <- c(1:3)
+column2 <- c("Anna", "Tom", "Sue")
+column3 <- c(TRUE, TRUE, FALSE)
+
+# Tạo data.frame
+dataset1 <- data.frame(column1, column2, column3)
+dataset1
+
+# Hiển thị tên cột
+colnames(dataset1)
+
+# Đổi tên cột thứ hai
+colnames(dataset1)[2] <- "name"
+dataset1
+```
+
+## LẤY GIÁ TRỊ TỪ DATA FRAME
+
+Vector tên cần phải tương thích với chiều của dữ liệu được đặt tên.
+
+```{r}
+# Lấy dữ liệu từ DATA FRAME
+
+# Cách 1 - sử dụng chỉ số như trong ma trận
+dataset1[3, 2]  # hàng 3, cột 2
+
+# Cách 2 - chọn dữ liệu theo tên cột
+dataset1["name"]  # toàn bộ vector tên
+dataset1[, "name"]  # ký hiệu thay thế
+dataset1$name  # ký hiệu thuận tiện
+
+dataset1[3, "name"]  # chỉ tên từ hàng thứ 3
+
+# Cách 3 - sử dụng tên hàng
+rownames(dataset1) <- c("girl", "boy", "teacher")
+dataset1
+
+dataset1["teacher", "name"]
+```
+
+## BỘ DỮ LIỆU CÓ SẴN
+
+Trong R, chúng ta có các bộ dữ liệu mẫu, rất hữu ích để kiểm tra các hàm và thao tác mới trước khi chuyển sang các bộ dữ liệu thực nghiệm.
+
+```{r}
+# Hiển thị các bộ dữ liệu có sẵn
+data()
+
+# Tải bộ dữ liệu iris
+data(iris)
+
+# Xem một số thông tin về bộ dữ liệu
+head(iris)
+```
+
+Ví dụ, bộ dữ liệu `iris` chứa thông tin về các đặc điểm của ba loài hoa iris (setosa, versicolor, và virginica) với các phép đo về cánh hoa (petal) và đài hoa (sepal).
+
+## CÁC HÀM QUAN TRỌNG NHẤT ĐỂ KIỂM TRA DỮ LIỆU
+
+```{r}
+# head() - hiển thị một vài hàng đầu tiên của dữ liệu (mặc định là 6)
+head(iris)
+
+# tail() - hiển thị một vài hàng cuối cùng của dữ liệu (mặc định là 6)
+tail(iris)
+
+# str() - hiển thị cấu trúc dữ liệu (lớp của biến, số lượng quan sát, v.v.)
+str(iris)
+
+# summary() - tóm tắt dữ liệu trong tập (thống kê mô tả, v.v.)
+summary(iris)
+
+# Các hàm hữu ích khác
+dim(iris)  # kích thước của DATA FRAME (số hàng, số cột)
+names(iris)  # tên của các cột
+class(iris)  # lớp của đối tượng
+```
+
+## CÁC THAO TÁC CƠ BẢN VỚI DATA FRAME
+
+```{r}
+# Chọn một tập con của dữ liệu
+small_iris <- iris[1:10, c("Sepal.Length", "Species")]
+small_iris
+
+# Thêm một cột mới
+small_iris$New_Column <- c(1:10)
+small_iris
+
+# Lọc dữ liệu dựa trên điều kiện
+setosa_only <- iris[iris$Species == "setosa", ]
+head(setosa_only)
+
+# Sắp xếp dữ liệu
+sorted_iris <- iris[order(iris$Sepal.Length), ]
+head(sorted_iris)
+
+# Tóm tắt theo nhóm
+aggregate(Sepal.Length ~ Species, data = iris, FUN = mean)
+```
+
+## LƯU DATA FRAME
+
+```{r, eval=FALSE}
+# Lưu DATA FRAME vào một tệp CSV
+write.csv(iris, "iris_data.csv", row.names = FALSE)
+
+# Lưu DATA FRAME vào một tệp RDS (định dạng R)
+saveRDS(iris, "iris_data.rds")
+
+# Lưu nhiều đối tượng vào một tệp RData
+save(iris, mtcars, file = "multiple_datasets.RData")
+```
+
+## KẾT LUẬN
+
+DATA FRAME (data frame) là cấu trúc dữ liệu cơ bản và quan trọng nhất trong R, đặc biệt trong phân tích dữ liệu và học máy. Chúng cung cấp một cách linh hoạt để lưu trữ và thao tác với dữ liệu dạng bảng, với các cột có thể có các kiểu dữ liệu khác nhau.
+
+Trong phần tiếp theo, chúng ta sẽ tìm hiểu về các kỹ thuật nâng cao hơn để thao tác với DATA FRAME, bao gồm việc sử dụng các gói trong tidyverse như dplyr để xử lý dữ liệu hiệu quả hơn.

@@ -1,0 +1,198 @@
+---
+title: "VẤN ĐỀ LÀM SẠCH DỮ LIỆU"
+author: "ThS. Lê Nhật Tùng"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# CHUẨN BỊ DỮ LIỆU
+
+Chuẩn bị dữ liệu là một bước quan trọng trước khi thực hiện phân tích dữ liệu. Quá trình này liên quan đến việc chuyển đổi dữ liệu thô thành một dạng có thể được hiểu bởi máy tính và các thuật toán (ví dụ: học không giám sát).
+
+Dữ liệu thô thường không có cấu trúc (dữ liệu lộn xộn). Chúng có thể chứa lỗi, không đầy đủ hoặc được lưu trữ mà không có mẫu nhất quán (ví dụ: trong biến giới tính: nam, man, 1...).
+
+Máy tính xử lý dữ liệu tốt nhất ở định dạng số. Khi phân tích các loại dữ liệu khác (ví dụ: dữ liệu văn bản), cần chú ý đảm bảo rằng chúng ở đúng dạng (ví dụ: chuyển đổi thành biến yếu tố, phân chia thành các nhóm tương tự, v.v.).
+
+## GARBAGE IN - GARBAGE OUT (RÁC VÀO - RÁC RA)
+
+Nguyên tắc này nhấn mạnh rằng nếu dữ liệu đầu vào kém chất lượng, kết quả phân tích cũng sẽ kém chất lượng, bất kể thuật toán hay mô hình phức tạp đến đâu.
+
+# QUY TRÌNH CHUẨN BỊ DỮ LIỆU
+
+1. Đánh giá chất lượng
+2. Làm sạch dữ liệu
+3. Biến đổi dữ liệu
+4. Giảm thiểu dữ liệu
+
+## 1. ĐÁNH GIÁ CHẤT LƯỢNG
+
+Đây là bước:
+- Xem xét cẩn thận dữ liệu đã tải,
+- Tìm hiểu cấu trúc của dữ liệu (có bao nhiêu biến, ở định dạng nào?),
+- Đánh giá mức độ phù hợp trong ngữ cảnh phân tích sẽ thực hiện (có thể một số biến không cần thiết?),
+- Đánh giá tính nhất quán của dữ liệu (dữ liệu có được lưu trữ theo cách thống nhất không?).
+
+### Các vấn đề cần kiểm tra trong đánh giá chất lượng
+
+- **Loại dữ liệu không có cấu trúc** - giá trị trong các biến phải có thể so sánh được (ví dụ: chúng ta có nên kiểm tra xem giá trị thu nhập ở các quốc gia khác nhau có được trình bày bằng cùng một loại tiền tệ không? Các giá trị có được trình bày ở dạng tuyệt đối hay, ví dụ, tính theo hàng nghìn?)
+
+- **Giá trị dữ liệu hỗn hợp** - kiểm tra xem các biến có được mã hóa thống nhất cho tất cả các quan sát không (ví dụ: biến giới tính - có được lưu trữ ở mọi nơi là 1-0, hay có xuất hiện giá trị văn bản, các thuật ngữ khác nhau - nam, M, male, v.v.)
+
+- **Quan sát ngoại lai** - có thể phát hiện quan sát có kết quả hoàn toàn nằm ngoài phạm vi (ví dụ: với kết quả kiểm tra, có thể ai đó nộp một tờ giấy trắng và đạt 0 điểm - những quan sát như vậy có thể ảnh hưởng nghiêm trọng đến trung bình của tất cả kết quả)
+
+- **Quan sát bị thiếu** - kiểm tra nơi có các trường trống trong dữ liệu (ví dụ: câu hỏi trong khảo sát không được trả lời, giá trị bị thiếu bên cạnh biến chỉ thu nhập, v.v.).
+
+## 2. LÀM SẠCH DỮ LIỆU
+
+Quá trình điền vào dữ liệu bị thiếu, sửa chữa dữ liệu, loại bỏ sự khác biệt và loại bỏ thông tin không liên quan đến phân tích tiếp theo.
+
+### Xử lý dữ liệu bị thiếu
+
+**Dữ liệu bị thiếu** - thiếu thông tin trong tập dữ liệu của bạn
+
+Các bước có thể thực hiện:
+
+- Loại bỏ các quan sát có giá trị bị thiếu khỏi tập dữ liệu. Phù hợp nếu dữ liệu bị thiếu chỉ là một phần nhỏ của tập dữ liệu lớn. Hữu ích nếu có những quan sát với nhiều trường không đầy đủ (ví dụ: một người trả lời cụ thể không muốn trả lời các câu hỏi khảo sát).
+
+- Điền vào dữ liệu bị thiếu - lựa chọn kỹ thuật điền phụ thuộc vào nhà phân tích (ví dụ: sử dụng giá trị trung bình, sử dụng dự đoán hoặc hồi quy, điền bằng giá trị không hoặc giá trị NA). Giải pháp tốt hơn cho các tập dữ liệu nhỏ.
+
+### Xử lý dữ liệu nhiễu
+
+**Dữ liệu nhiễu** - dữ liệu chứa quá nhiều thành phần (văn bản quá mức: ví dụ: dung lượng lưu trữ 64GB, thay vì 64), phân phối không đều (ví dụ: thu nhập - thường hữu ích khi nhóm dữ liệu như vậy thành các nhóm thu nhập thấp, trung bình và cao, thay vì lưu trữ giá trị chính xác), các biến chứa thông tin không liên quan cho phân tích tiếp theo, v.v.
+
+Các bước có thể thực hiện:
+
+- Làm sạch dữ liệu văn bản khỏi thông tin thừa (loại bỏ tiền tố, sắp xếp thông tin đơn vị)
+- Nhóm dữ liệu số thành các danh mục rộng hơn (binning)
+- Chia dữ liệu thành các nhóm (ví dụ: bằng phân tích cụm, phân cụm)
+- Loại bỏ các biến dư thừa (ví dụ: chỉ mục, cột trùng lặp, v.v.)
+
+## 3. BIẾN ĐỔI DỮ LIỆU
+
+Biến đổi dữ liệu liên quan đến việc tổ chức các loại biến - chuyển đổi dữ liệu thành các định dạng cần thiết cho phân tích tiếp theo.
+
+Bước này cũng bao gồm các yếu tố liên quan đến việc sắp xếp thang đo giá trị - chuẩn hóa và tiêu chuẩn hóa.
+
+### Các kỹ thuật biến đổi dữ liệu
+
+- **Sắp xếp định dạng dữ liệu**: đảm bảo các biến ở định dạng nhất quán, dự định.
+
+- **Tiêu chuẩn hóa**: thu nhỏ dữ liệu đến một phạm vi nhất định (để cho phép so sánh). Lựa chọn thang đo tùy thuộc vào nhà nghiên cứu, thường thu nhỏ giá trị vào phạm vi (-1,1) hoặc (0,1) được sử dụng. Chuẩn hóa cũng có thể thực hiện: biến đổi dữ liệu theo phân phối chuẩn.
+
+- **Lựa chọn đặc trưng**: quyết định biến nào quan trọng nhất cho phân tích tiếp theo. Một điểm quan trọng từ góc độ học máy - tập hợp đặc trưng càng nhỏ, kết quả càng nhanh (đôi khi kết quả cũng chính xác hơn - chúng ta giảm bớt "tiếng ồn" dư thừa trong dữ liệu và dựa vào suy luận trên các đặc trưng quan trọng nhất.
+
+- **Rời rạc hóa**: một quá trình tương tự như binning, nhưng thường được thực hiện trên dữ liệu đã làm sạch. Nó có thể liên quan đến việc kết hợp thông tin từ nhiều biến và chuyển đổi chúng thành các khoảng (ví dụ: thay vì lưu trữ thời gian tập thể dục chính xác tính bằng phút và giây, bạn có thể sử dụng biến tổng quát dưới dạng khoảng 0-15 phút, 15-30 phút, v.v.).
+
+## 4. GIẢM THIỂU DỮ LIỆU
+
+Dữ liệu càng nhiều, phân tích càng khó khăn (ngay cả sau khi làm sạch và biến đổi). Tùy thuộc vào nhiệm vụ phân tích, có thể có nhiều dữ liệu hơn mức cần thiết (ví dụ: trong phân tích văn bản, có lẽ chúng ta không cần các tuyên bố đầy đủ, mà chỉ cần các từ khóa?).
+
+Giảm chiều không chỉ làm cho phân tích dễ dàng và chính xác hơn. Lưu trữ dữ liệu đã giảm thiểu ít tốn kém hơn nhiều.
+
+### Kỹ thuật giảm thiểu dữ liệu
+
+- **Lựa chọn thuộc tính**: một quá trình tương tự như rời rạc hóa, nó cho phép dữ liệu được đưa vào các nhóm nhỏ hơn; nó liên quan đến việc kết hợp các thuộc tính đơn lẻ, phân mảnh thành các nhóm tổng quát hơn: ví dụ: có các biến 'giới tính' (mức 'nữ' và 'nam') và 'là diễn viên' (với một mức 'có'), chúng có thể được kết hợp thành các thuộc tính 'diễn viên nam', 'diễn viên nữ'.
+
+- **Giảm số lượng**: một quá trình hỗ trợ việc lưu trữ và xử lý dữ liệu sau đó; nó liên quan đến việc chỉ chọn những biến có liên quan cho phân tích tiếp theo.
+
+- **Giảm chiều**: quá trình giảm lượng dữ liệu được sử dụng cho phân tích sau này; thường liên quan đến việc sử dụng các thuật toán (k-nearest neighbors hoặc PCA) để nhận dạng mẫu trong dữ liệu và kết hợp các biến tương tự thành các thuộc tính nhóm tổng quát hơn.
+
+# ĐỌC DỮ LIỆU VÀO R
+
+## CÁCH ĐỌC DỮ LIỆU KHÁC NHAU TRONG R
+
+R hỗ trợ phân tích các loại dữ liệu khác nhau - chủ yếu là dữ liệu thu được từ các nguồn bên ngoài.
+
+Việc tải dữ liệu vào R được thực hiện bằng cách sử dụng:
+- các hàm cơ bản, có nguồn gốc từ R cơ sở
+- các hàm mở rộng, có nguồn gốc từ các gói bổ sung được cài đặt trong phiên bản R cục bộ
+
+## THƯ MỤC LÀM VIỆC
+
+Thực hành tốt là lưu trữ dữ liệu và tập lệnh (được sử dụng trong một dự án) trong một thư mục tập thể. Điều này giữ cho các tệp có thứ tự và làm cho công việc phân tích dễ dàng hơn.
+
+Thư mục làm việc có thể được khai báo trong R. Bằng cách này, các tệp cần đọc có thể được chỉ ra bằng đường dẫn tương đối ngắn, bắt đầu từ vị trí của thư mục làm việc đã khai báo.
+
+```r
+setwd()  # lệnh để chỉ ra thư mục làm việc
+getwd()  # kiểm tra đường dẫn của thư mục làm việc hiện tại
+```
+
+Khi làm việc với các dự án RStudio, thư mục làm việc được tự động đặt ở vị trí dự án đã chỉ định.
+
+## ĐỌC DỮ LIỆU - HÀNG CƠ SỞ
+
+1. Xác định vị trí tệp và đường dẫn tuyệt đối của nó (ví dụ: „C:\Users\user1\files\file.extension")
+2. Chuyển đổi đường dẫn thành một dạng có thể nhận biết bởi các hệ thống dựa trên Linux (R có nhiều giả định dựa trên Linux). Trong thực tế, điều này có nghĩa là chuyển đổi đường dẫn từ Windows bằng cách thay đổi ký tự \ thành / hoặc \\. Đường dẫn trích xuất từ Linux hoặc macOS được đưa ra ở dạng có thể đọc được bởi R.
+3. Tải dữ liệu bằng cách sử dụng các hàm tích hợp trong R với chỉ định đường dẫn đến tệp.
+
+### BẢNG CÁC HÀM CƠ SỞ
+
+| Loại dữ liệu | Phần mở rộng | Hàm |
+|--------------|--------------|-----|
+| Tệp dữ liệu R (RData) | rdata, rda | Hàm: `load()` <br> `load("survey.rdata")` <br> `load("survey.rda")` |
+| Tệp dữ liệu R, chỉ với một biến (RDS) | rds | Hàm: `readRDS()` <br> `dataRDS <- readRDS("survey.rds")` |
+| Dữ liệu phân tách (bằng dấu phẩy, dấu cách, dấu chấm phẩy, v.v.) | txt, csv, dat | Hàm: `read.table()` hoặc `read.csv()` <br> Tham số quan trọng: `sep = " "` (mặc định, dấu cách), `sep = "\t"` (tab), `sep = ","` (dấu phẩy), `sep = ";"` (dấu chấm phẩy), `header = TRUE` (nếu có tiêu đề). <br> `dataSpace <- read.table("survey1.csv", header=TRUE)` <br> `dataComma <- read.csv("survey2.csv", header=TRUE)` |
+
+## ĐỌC DỮ LIỆU - HÀNG MỞ RỘNG
+
+Việc tải các loại dữ liệu ít phổ biến được thực hiện trong R bằng cách sử dụng các hàm từ các gói bổ sung. Ví dụ, dữ liệu từ STATA, SAS, SPSS hoặc Excel có thể được tải theo cách này.
+
+Trong trường hợp này, chúng ta phải cài đặt và tải thêm gói mà từ đó có hàm cần thiết để tải loại dữ liệu này. Các bước tiếp theo vẫn giữ nguyên.
+
+```r
+install.packages("package")  # cài đặt gói
+library("package")  # tải gói trong phiên R hiện tại
+```
+
+Làm việc trên một thiết bị nhất định và phiên bản R đã chọn, các gói chỉ cần được cài đặt một lần. Việc tải các gói nên được lặp lại trong mỗi phiên R mới khi nhu cầu sử dụng chúng phát sinh. Mã tải các gói thường được đặt ở đầu tập lệnh.
+
+### BẢNG CÁC HÀM MỞ RỘNG
+
+| Nguồn dữ liệu | Gói | Hàm |
+|---------------|-----|-----|
+| SPSS | foreign | Hàm: `read.spss()` <br> `library(foreign)` <br> `dataSPSS <- read.spss("C:/daa/survey.save", to.data.frame=TRUE)` |
+| STATA | foreign | Hàm: `read.data()` <br> `library(foreign)` <br> `dataStata <- read.dta("survey.dta")` |
+| SAS | foreign | Hàm: `read.xport()` <br> `library(foreign)` <br> `dataSAS <- read.xport("C:/data/survey")` |
+| EXCEL | readxl | Hàm: `read_excel()` <br> `library(readxl)` <br> `dataEXCEL <- read_excel("survey.xlsx", sheet = 1)` <br> `dataEXCEL <- read_excel("survey.xlsx", sheet = "sheetname")` |
+
+## LƯU CÔNG VIỆC CỦA BẠN VÀO TỆP R
+
+Lưu một đối tượng vào tệp:
+```r
+saveRDS(object, "save1.rds")
+```
+
+Để khôi phục nó dưới một tên khác:
+```r
+my_data <- readRDS("save1.rds")
+```
+
+Lưu một đối tượng ở định dạng RData:
+```r
+save(data1, file = "save2.RData")
+```
+
+Lưu nhiều đối tượng và tải chúng:
+```r
+save(data1, data2, file = "save2.RData")
+load("save2.RData")
+```
+
+Lưu toàn bộ phiên của bạn có thể hữu ích nếu bạn đang làm việc trên dự án phân tích lớn hơn và muốn tiếp tục công việc của mình vào ngày tiếp theo chính xác như khi bạn rời đi. Để làm điều đó, bạn cần lưu toàn bộ hình ảnh không gian làm việc:
+```r
+save.image(file = "image.RData")
+```
+
+Để khôi phục không gian làm việc của bạn, hãy nhập:
+```r
+load("image.RData")
+```

@@ -1,4 +1,6 @@
 # Sử dụng bộ dữ liệu có sẵn CO2 cho các nhiệm vụ sau:
+CO2
+
 # 1. In giá trị CO2 uptake từ lớn nhất đến nhỏ nhất.
 # 2. Hiển thị các dòng của bộ dữ liệu CO2, nơi Type được đặt thành Quebec và Treatment thành chilled.
 # 3. Hiển thị các dòng của bộ dữ liệu CO2, nơi uptake lớn hơn 40 và
