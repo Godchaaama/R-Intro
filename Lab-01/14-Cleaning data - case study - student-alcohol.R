@@ -150,10 +150,62 @@ alcohol$studytime <- factor(alcohol$studytime, levels = c(1, 2, 3, 4),
                             ordered = TRUE)
 
 
-
 # School support
 summary(factor(alcohol$schoolsup))
 alcohol$schoolsup <- factor(alcohol$schoolsup, levels = c("no", "yes"))
 
+# other variables with the same structure - we will try to automate this
+binaryVariables <- c("schoolsup", "famsup", "paid", "activities", "nursery", "higher", "internet", "romantic")
 
+alcohol[, binaryVariables]
+
+lapply(alcohol[,binaryVariables], summary)
+
+lapply(alcohol[,binaryVariables], function(x){summary(factor(x))})
+
+# Problem with variable internet - many levels, database errors
+alcohol$internet[alcohol$internet==0]
+alcohol$internet[alcohol$internet==0] <- "no"
+
+alcohol$internet[alcohol$internet==1]
+alcohol$internet[alcohol$internet==1] <- "yes"
+
+alcohol$internet[alcohol$internet=="NO"]
+alcohol$internet[alcohol$internet=="NO"] <- "no"
+
+alcohol$internet[alcohol$internet=="YES"]
+alcohol$internet[alcohol$internet=="YES"] <- "yes"
+summary(factor(alcohol$internet))
+
+
+lapply(alcohol[,binaryVariables], function(x){summary(factor(x))})
+
+alcohol[,binaryVariables] <- lapply(alcohol[,binaryVariables], factor, levels= c("no", "yes"))
+
+
+# Tiếp tục kiểm tra các nhóm
+str(alcohol)
+
+leveledVariables <- c("freetime", "goout", "Dalc", "Walc")
+
+lapply(alcohol[,leveledVariables], summary)
+
+
+
+alcohol[,leveledVariables] <- lapply(alcohol[,leveledVariables], factor, 
+                                     levels = c(1, 2, 3, 4, 5), 
+                                     labels = c("very low", "low", "average",
+                                                "high", "very high"),
+                                     ordered = TRUE)
+
+# numeric: from 1 - very bad to 5 - very good
+summary(alcohol$health)
+summary(factor(alcohol$health))
+
+alcohol$health <- factor(alcohol$health, levels = c(1, 2, 3, 4, 5), 
+                         labels = c("very bad", "bad", "average",
+                                    "good", "very good"),
+                         ordered = TRUE)
+
+str(alcohol)
 

@@ -93,5 +93,5 @@ write.csv(missCO2, "missCO2.csv", row.names = TRUE)
 saveRDS(missCO2, "missCO2.rds")
 
 # Lưu nhiều đối tượng vào một tệp RData
-save(iris, mtcars, file = "multiple_datasets.RData")
-KẾT LUẬN
+# save(iris, mtcars, file = "multiple_datasets.RData")
+
