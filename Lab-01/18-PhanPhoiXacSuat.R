@@ -68,3 +68,28 @@ hist(exponential_sample, breaks = 30, main = "Phân phối mũ",
 
 # Thêm đường lý thuyết
 curve(dexp(x, rate = 0.2), col = "blue", lwd = 2, add = TRUE)
+
+# Chọn Mẫu Ngẫu Nhiên
+# Chọn mẫu ngẫu nhiên đóng một vai trò cực kỳ quan trọng trong nghiên cứu thống kê và phân tích dữ liệu. Đây là một phương pháp cần thiết để đảm bảo rằng mẫu được thu thập có khả năng đại diện chính xác cho tổng thể quần thể mà không gặp phải sự thiên lệ.
+# Tạo một vector từ 1 đến 10
+numbers <- 1:100
+
+# Chọn 5 số ngẫu nhiên
+random_sample <- sample(numbers, size = 5)
+print("Mẫu ngẫu nhiên cơ bản:")
+random_sample
+
+# 4.3.2. Chọn mẫu với thay thế
+# Khi chọn mẫu với thay thế, mỗi phần tử có thể được chọn nhiều lần:
+random_sample <- sample(numbers, size = 5, )
+print("Mẫu ngẫu nhiên cơ bản:")
+random_sample
+
+# 4.3.4. Chọn mẫu từ DataFrame
+set.seed(123)
+df <- data.frame(matrix(rnorm(20), nrow=10000))
+df
+
+# Chon ngẫu nhiên 5 hàng từ DataFrame
+random_rows <- df[sample(nrow(df), 5), , drop = FALSE ]
+print(random_rows)
