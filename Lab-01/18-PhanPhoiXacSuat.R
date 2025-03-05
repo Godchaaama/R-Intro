@@ -51,3 +51,20 @@ hist(uniform_sample, breaks = 30, main = "Phân phối đều",
 
 # Thêm đường lý thuyết
 abline(h = 1, col = "blue", lwd = 2)
+
+
+# 3.1.4. Phân phối mũ (Exponential Distribution)
+# Phân phối mũ thường được sử dụng để mô tả thời
+# gian giữa các sự kiện xảy ra theo quy luật mũ. 
+# Nó được mô tả bởi một tham số: tỷ lệ (rate).
+# Tạo mẫu từ phân phối mũ
+set.seed(123)
+exponential_sample <- rexp(n = 1000, rate = 0.2)
+
+# Vẽ histogram
+hist(exponential_sample, breaks = 30, main = "Phân phối mũ",
+     xlab = "Giá trị", col = "orange", border = "white",
+     prob = TRUE)
+
+# Thêm đường lý thuyết
+curve(dexp(x, rate = 0.2), col = "blue", lwd = 2, add = TRUE)
