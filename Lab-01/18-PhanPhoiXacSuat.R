@@ -90,6 +90,14 @@ set.seed(123)
 df <- data.frame(matrix(rnorm(20), nrow=10000))
 df
 
-# Chon ngẫu nhiên 5 hàng từ DataFrame
-random_rows <- df[sample(nrow(df), 5), , drop = FALSE ]
-print(random_rows)
+
+data(airquality)
+# Chọn ngẫu nhiên 5 dòng bằng cách lấy mẫu chỉ số hàng
+set.seed(123)
+random_indices <- sample(nrow(airquality), 5)
+print("Các chỉ số hàng được chọn:")
+print(random_indices)
+
+# Lấy ra 5 dòng dựa trên chỉ số đã chọn, đặt drop=FALSE để đảm bảo kết quả vẫn là dataframe
+random_rows <- airquality[random_indices, , drop = FALSE]
+random_rows
