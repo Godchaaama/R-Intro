@@ -67,3 +67,74 @@ Khoảng tứ phân vị (Quartiles)
 # Tứ phân vị thứ hai (Q2): Chính là phân vị thứ 50 (P50) hay trung vị. Là giá trị mà 50% số quan sát có giá trị nhỏ hơn hoặc bằng nó.
 # Tứ phân vị thứ ba (Q3): Chính là phân vị thứ 75 (P75). Là giá trị mà 75% số quan sát có giá trị nhỏ hơn hoặc bằng nó.
 # Khoảng tứ phân vị (IQR - Interquartile Range): Là khoảng cách giữa tứ phân vị thứ nhất và tứ phân vị thứ ba. IQR = Q3 - Q1.
+
+
+# Phân vị 25%
+Q1 <- quantile(airquality$Ozone, 0.25, na.rm=TRUE)
+Q1
+
+# Phân vị 50% (Q2 - Trung vị)
+Q2 <- quantile(airquality$Ozone, 0.5, na.rm = TRUE)
+Q2
+
+# Phân vị 75% (Q3)
+Q3 <- quantile(airquality$Ozone, 0.75, na.rm = TRUE)
+Q3
+
+# Tính tất cả phân vị cùng lúc
+quantile(airquality$Ozone, probs = c(0, 0.25, 0.5, 0.75, 1), na.rm=TRUE)
+
+
+# IQR
+Q3-Q1
+IQR_ozone <- IQR(airquality$Ozone, na.rm=TRUE)
+IQR_ozone
+
+# 3.6 Độ lệch chuẩn và phương sai
+
+# Phương sai (Variance)
+# Phương sai đo lường mức độ phân tán trung bình của các điểm dữ liệu so với giá trị trung bình của chúng.
+# Công thức phương sai mẫu:
+#   
+# σ² = Σ(x - μ)²/n (cho tổng thể)
+# s² = Σ(x - x̄)²/(n-1) (cho mẫu)
+# 
+# Trong đó:
+#   
+# x là giá trị của từng quan sát
+# μ (hoặc x̄) là giá trị trung bình
+# n là số lượng quan sát
+# Σ là ký hiệu tổng
+# Độ lệch chuẩn (Standard Deviation)
+# Độ lệch chuẩn là căn bậc hai của phương sai. Nó có cùng đơn vị đo với dữ liệu gốc, nên dễ hiểu và sử dụng hơn.
+# Công thức độ lệch chuẩn:
+#   
+# σ = √σ² (cho tổng thể)
+# s = √s² (cho mẫu)
+
+# Độ lệch chuẩn của Ozone
+sd_ozone <- sd(airquality$Ozone, na.rm=TRUE)
+sd_ozone
+
+# Phương sai của Ozone
+var_ozone <- var(airquality$Ozone, na.rm=TRUE)
+var_ozone
+
+sd_ozone^2
+
+# 3.7 Tính toán tự động cho nhiều biến
+lapply(airquality[,1:4], mean, na.rm=TRUE)
+
+lapply(airquality[,1:4], sd, na.rm=TRUE)
+
+# 3.8 Sử dụng package
+# Cài đặt: install.packages("package_name")
+# Sử dụng: library("package_name")
+install.packages("pastecs")
+library(pastecs)
+
+# Tổng hợp thống kê cho 3 cột đầu tiên
+stat.desc(airquality[,1:3])
+
+# Làm tròn kết quả cho dễ đọc
+round(stat.desc(airquality[,1:3]), 2)

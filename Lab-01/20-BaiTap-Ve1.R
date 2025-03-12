@@ -21,7 +21,7 @@ hist(USArrests$Assault,
      main = "Phân phối số vụ tấn công ở Hoa Kỳ",  # Thêm tiêu đề
      xlab = "Số vụ tấn công (trên 100,000 dân)",  # Thêm nhãn trục x
      ylab = "Tần số",                              # Thêm nhãn trục y
-     col = "skyblue",                              # Màu cột
+     col = "skyblue",                            # Màu cột
      border = "white")                             # Màu viền
 # ===============================================================================
 # Bài 2: Xử lý dữ liệu insurance

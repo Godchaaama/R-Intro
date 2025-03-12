@@ -287,7 +287,7 @@ plot(lifePLDE[lifePLDE$Country=="Poland", "Year"],
      ylab = "Life expectancy", 
      col = "red",
      lwd = 2,
-     las =1 #  # Hướng nhãn: 0=song song, 1=ngang, 2=vuông góc, 3=dọc
+     las =3 #  # Hướng nhãn: 0=song song, 1=ngang, 2=vuông góc, 3=dọc
 )  # Màu cho đường Ba Lan
 
 lines(lifePLDE[lifePLDE$Country=="Germany", "Year"], 
