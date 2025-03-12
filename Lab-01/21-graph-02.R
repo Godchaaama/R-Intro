@@ -238,7 +238,7 @@ year_max_le
 
 plot(lifePLDE[lifePLDE$Country=="Poland", "Year"], 
      lifePLDE[lifePLDE$Country=="Poland", "Life.expectancy"], 
-     ylim = c(73, 90), 
+ylim = c(73, 90), 
      type = "l", 
      lty = 2,
      xlab = "Year", 
@@ -311,5 +311,18 @@ arrows(2002, 76, 2004, 75, col = "green", lwd=3)
 points(x=year_max_le, y=max_le_germany, pch=19, col="red")
 
 
+# 2.16 Thay đổi hướng nhãn trục
+# R có nhiều cách để chỉ định màu sắc:
+# Tên màu: R có hơn 600 tên màu được xác định sẵn (ví dụ: “red”, “blue”, “darkgreen”)
+# Mã hex: Dạng “#RRGGBB” (ví dụ: “#FF0000” cho màu đỏ)
+# Hàm RGB: rgb(red, green, blue, alpha) với các giá trị từ 0 đến 1
 
+
+# Tạo một biểu đồ với các màu khác nhau
+barplot(
+  rep(1,5),
+  col=c("red", "blue", "#00FF00", rgb(1,0,1), "darkblue"),
+  names.arg = c("red", "blue", "#00FF00", rgb(1,0,1), "darkblue"),
+  main = "Các cách chỉ định màu sắc trong R"
+)
 
