@@ -3,13 +3,35 @@
 # 1. Biểu đồ histogram với các tùy chỉnh
 # a) Sử dụng bộ dữ liệu USArrests (có sẵn trong R) để vẽ biểu đồ histogram
 # hiển thị phân phối của biến Murder (tỷ lệ giết người).
+hist(USArrests$Murder, main = "Phân phối số vụ giết người ở Mỹ",
+     xlab = "Số vụ giết người / 100,000 dân",
+     col = "lightblue",
+     border = "darkblue"
+)
+
 # b) Sử dụng bảng màu Zissou1 từ gói wesanderson để tạo một vector gồm 10 màu liên tục
 # và áp dụng các màu này cho các cột trong biểu đồ histogram.
 # Lưu ý: Bạn có thể giả định rằng gói wesanderson đã được cài đặt và tải khi nộp bài.
+library(wesanderson)
+if(require(wesanderson)){
+  # Tạo một vector 10 màu liên tục
+  zissou_colors <- wes_palette("Zissou1", 10, type="continuous")
+  
+  # Vẽ histogram
+  hist(USArrests$Murder, main = "Phân phối số vụ giết người ở Mỹ",
+       xlab = "Số vụ giết người / 100,000 dân",
+       col = zissou_colors,
+       border = "darkblue"
+  )
+}
+
 # c) Tạo một biểu đồ histogram thứ hai cho biến Rape (tỷ lệ hiếp dâm) và tô màu các cột
 # bằng bảng màu Moonrise1 (4 màu rời rạc) từ gói wesanderson.
+
 # d) Thiết lập cửa sổ đồ họa để hiển thị hai cột, một hàng.
+
 # e) Vẽ hai biểu đồ histogram cạnh nhau.
+
 # f) Khôi phục lại cài đặt mặc định cho môi trường đồ họa.
 
 # 2. Biểu đồ boxplot với các tùy chỉnh cho dữ liệu bảo hiểm
