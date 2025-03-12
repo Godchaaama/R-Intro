@@ -18,11 +18,11 @@ for (i in 1:length(logicalVector)){
 }
 counter
 
-x <- 100
+x <- 101
 if((x%%2)==0){
-  print(x, " là số chẵn");
+  print(paste(x, " la so chan"));
 }else{
-  print(x, " là số lẻ")
+  print(paste(x, " la so le"));
 }
 
 
