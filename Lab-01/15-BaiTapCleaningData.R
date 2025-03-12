@@ -1,3 +1,4 @@
+### LẤY ĐIỂM THỰC HÀNH
 ### Các bài tập ######################################################################
 # 1. Đọc mô tả dữ liệu phân tích tính cách khách hàng và tải 
 # vào R (file clients.csv) với tên biến là "clients".

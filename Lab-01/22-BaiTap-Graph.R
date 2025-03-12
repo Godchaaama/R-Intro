@@ -91,15 +91,32 @@ boxplot(
 # c) Thay đổi màu sắc của các 'hộp' (box) theo từng khu vực và thêm chú thích.
 # Sử dụng bảng màu viridis với 4 màu rời rạc.
 # Lưu ý: Bạn có thể giả định rằng gói viridis đã được cài đặt và tải khi nộp bài.
-
-
+if(require(viridis)){
+  # Tạo 4 màu từ bảng viridis
+  region_colors <- viridis(4, option = "D")
+  
+  boxplot(
+    charges ~ region,
+    data = insurance,
+    xlab="Region",
+    ylab="Medical charges",
+    col = region_colors
+  )
+  
+}
 
 # d) Tạo chú thích (legend) ở góc trên bên phải của biểu đồ.
 # Đặt tên các phần tử trong chú thích giống hệt tên các danh mục trong biểu đồ.
 # Gợi ý: Bạn có thể sử dụng hàm levels() để lấy tên tự động.
 # Đảm bảo màu sắc trong chú thích trùng khớp với màu sắc của các hộp.
 # Khi nộp bài, chỉ cần cung cấp dòng mã tạo chú thích.
+legend("topright",
+       legend=levels(insurance$region),
+       fill= region_colors,
+       title = "Region")
 
+
+### LẤY ĐIỂM THỰC HÀNH
 # 3. Biểu đồ cột cho dữ liệu Thế vận hội
 # a) Đọc dữ liệu Tokyo 2021 từ thư mục olympic games và lưu vào biến games.
 # b) Chuẩn bị biểu đồ cột hiển thị 10 quốc gia giành nhiều huy chương bạc nhất.
