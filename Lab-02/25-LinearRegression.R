@@ -34,3 +34,25 @@ model1$coefficients
 model1$coefficients[[1]]
 model1$coefficients[[2]]
 
+
+#=====================
+library(MASS)
+data(Boston)
+
+str(Boston)
+
+summary(Boston)
+
+# Ve ma tran tuong quan
+pairs(Boston)
+
+# Tính ma trận tương quan
+correlation<-cor(Boston)
+print(correlation["medv", ])
+
+# plot bieu do phan tan giua so phong trung va gia nha
+plot(Boston$rm, Boston$medv, 
+     xlab="So phong trung binh (rm)",
+     ylab="Gia nha trung binh medv",
+     main="Moi quan he giua rm va medv",
+     abline(lm(medv~rm, data=Boston), col="red"))
