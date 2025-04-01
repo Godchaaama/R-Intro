@@ -2,6 +2,10 @@
 title: "32-SVM-RMarkdown"
 author: "Le Nhat Tung"
 output:
+  # html_document: 
+  #   toc: true
+  #   toc_depth: 3
+  #   number_sections: true
   pdf_document:
     latex_engine: xelatex
     toc: true
@@ -11,18 +15,21 @@ output:
     fig_height: 5
     fig_width: 7
     highlight: tango
-  html_document: default
 header-includes:
   - \usepackage{graphicx}
+  - \usepackage{fontspec}
+  - \setsansfont{Arial}
 ---
-```{r}
-knitr::opts_chunk$set(
-  dev = "png",        # Sử dụng định dạng PNG
-  dpi = 300,          # Độ phân giải cao
-  fig.path = "figures/", # Lưu hình vào thư mục figures
-  fig.align = 'center'
-)
-```
+# Giới thiệu về SVM
+
+**Support Vector Machine (SVM)** là một trong những thuật toán học máy có giám sát (supervised learning) phổ biến nhất. SVM được sử dụng rộng rãi trong các bài toán phân loại (classification) và hồi quy (regression).
+
+## Ý tưởng chính của SVM là gì?
+
+Hãy tưởng tượng bạn có một tập dữ liệu gồm nhiều điểm thuộc hai lớp khác nhau (ví dụ: hoa màu đỏ và hoa màu xanh). SVM cố gắng tìm một đường thẳng (trong không gian 2D) hoặc một siêu phẳng (hyperplane) (trong không gian nhiều chiều) tốt nhất để phân tách hai lớp dữ liệu này.
+
+<!-- !["Mo ta SVM"](images/img1.png) -->
+
 ``` {r, echo=FALSE, fig.width=6, fig.height=4, fig.cap="Mô tả SVM"}
 # Ví dụ tạo biểu đồ minh họa SVM đơn giản
 plot(1:5, 1:5, type="n", xlab="X1", ylab="X2", main="Minh họa SVM")
@@ -35,17 +42,225 @@ text(2, 4, "Margin", cex=0.8)
 arrows(2, 3.8, 2, 2.7, length=0.1)
 ```
 
-
-# Giới thiệu về SVM
-
-**Support Vector Machine (SVM)** là một trong những thuật toán học máy có giám sát (supervised learning) phổ biến nhất. SVM được sử dụng rộng rãi trong các bài toán phân loại (classification) và hồi quy (regression).
-
-## Ý tưởng chính của SVM là gì?
-
-Hãy tưởng tượng bạn có một tập dữ liệu gồm nhiều điểm thuộc hai lớp khác nhau (ví dụ: hoa màu đỏ và hoa màu xanh). SVM cố gắng tìm một đường thẳng (trong không gian 2D) hoặc một siêu phẳng (hyperplane) (trong không gian nhiều chiều) tốt nhất để phân tách hai lớp dữ liệu này.
-
-!["Mo ta SVM"](images/img1.png)
-
-<!-- https://upload.wikimedia.org/wikipedia/commons/2/2a/Svm_max_sep_hyperplane_with_margin.png -->
-
 Đường thẳng "tốt nhất" là đường có **lề (margin) lớn nhất** - tức là khoảng cách từ đường đến các điểm dữ liệu gần nhất của mỗi lớp là lớn nhất.
+
+### Kernel Trick
+Khi dữ liệu không thể phân tách tuyến tính trong không gian ban đầu, SVM sử dụng **kernel trick** để ánh xạ dữ liệu sang không gian có số chiều cao hơn, nơi mà dữ liệu có thể được phân tách tuyến tính.
+
+Một số kernel phổ biến:
+
+- **Linear**: $K(x_i, x_j) = x_i^T x_j$
+
+- **Polynomial**: $K(x_i, x_j) = (γx_i^T x_j + r)^d$
+
+- **RBF (Radial Basis Function)**: $K(x_i, x_j) = exp(-γ||x_i - x_j||^2)$
+
+- **Sigmoid**: $K(x_i, x_j) = tanh(γx_i^T x_j + r)$
+
+# Mô hình SVM và Ứng dụng với Bộ Dữ liệu Iris
+
+## Cài đặt và nạp các gói cần thiết
+
+```{r}
+library(e1071)  # Gói chứa hàm svm
+library(caret)  # Dùng cho đánh giá mô hình
+library(ggplot2)  # Dùng cho trực quan hóa
+```
+
+## Tien xu ly du lieu
+
+### Nap du lieu Iris va kiem tra cau truc
+
+```{r}
+# Nạp dữ liệu Iris
+data(iris)
+```
+
+
+```{r}
+# Xem cấu trúc dữ liệu
+str(iris)
+```
+
+```{r}
+# Xem thống kê mô tả dữ liệu
+summary(iris)
+```
+
+### Trực quan hóa dữ liệu
+
+```{r fig.cap="Phân bố các loài hoa Iris dựa trên chiều dài và chiều rộng cánh hoa"}
+# Vẽ biểu đồ phân tán theo cặp đặc trưng Petal.Length và Petal.Width
+ggplot(iris, aes(x = Petal.Length, y = Petal.Width, color = Species)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(title = "Phân bố các loài hoa Iris",
+       x = "Chiều dài cánh hoa (cm)",
+       y = "Chiều rộng cánh hoa (cm)") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        text = element_text(size = 12))
+```
+
+```{r fig.cap="Ma trận phân tán tất cả các đặc trưng của bộ dữ liệu Iris"}
+# Ma trận phân tán (pairs plot)
+pairs(iris[1:4], 
+      main = "Ma trận phân tán dữ liệu Iris", 
+      pch = 21, 
+      bg = c("red", "green3", "blue")[unclass(iris$Species)])
+legend("bottom", 
+       legend = levels(iris$Species), 
+       fill = c("red", "green3", "blue"), 
+       horiz = TRUE, 
+       cex = 0.8)
+```
+
+## Chia dữ liệu thành tập huấn luyện và tập kiểm tra
+
+```{r}
+# Đặt seed cho tính tái lập
+set.seed(123)
+
+# Tạo chỉ số phân chia
+trainIndex <- createDataPartition(iris$Species, p = 0.7, list = FALSE)
+trainData <- iris[trainIndex, ]
+testData <- iris[-trainIndex, ]
+
+# Kiểm tra kích thước các tập dữ liệu
+cat("Kích thước tập huấn luyện:", dim(trainData), "\n")
+cat("Kích thước tập kiểm tra:", dim(testData), "\n")
+```
+## Xây dựng mô hình SVM
+
+### Mô hình SVM với kernel tuyến tính
+
+### Mô hình SVM với kernel tuyến tính
+```{r}
+# Xây dựng mô hình SVM với kernel tuyến tính
+svm_linear <- svm(Species ~ ., 
+                 data = trainData, 
+                 type = "C-classification", 
+                 kernel = "linear", 
+                 cost = 1)
+
+# Tóm tắt mô hình
+summary(svm_linear)
+```
+
+### Mô hình SVM với kernel RBF
+```{r}
+# Xây dựng mô hình SVM với kernel RBF (Radial Basis Function)
+svm_radial <- svm(Species ~ ., 
+                 data = trainData, 
+                 type = "C-classification", 
+                 kernel = "radial", 
+                 cost = 1,
+                 gamma = 0.5)
+
+# Tóm tắt mô hình
+summary(svm_radial)
+```
+## Đánh giá mô hình
+
+### Dự đoán và ma trận nhầm lẫn
+
+```{r}
+# Dự đoán với mô hình tuyến tính
+pred_linear <- predict(svm_linear, testData)
+# Ma trận nhầm lẫn
+confusionMatrix(pred_linear, testData$Species)
+```
+
+```{r}
+# Dự đoán với mô hình RBF
+pred_radial <- predict(svm_radial, testData)
+# Ma trận nhầm lẫn
+confusionMatrix(pred_radial, testData$Species)
+```
+### Trực quan hóa kết quả phân loại
+```{r}
+# Tạo dữ liệu cho biểu đồ
+results_df <- data.frame(
+  Actual = testData$Species,
+  Linear_Pred = pred_linear,
+  Radial_Pred = pred_radial
+)
+
+# Trực quan hóa kết quả dự đoán của mô hình tuyến tính
+ggplot(results_df, aes(x = Actual, fill = Linear_Pred)) +
+  geom_bar(position = "dodge") +
+  labs(title = "So sánh kết quả dự đoán và giá trị thực (Kernel Tuyến tính)",
+       x = "Loài thực tế",
+       y = "Số lượng mẫu",
+       fill = "Loài dự đoán") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        text = element_text(size = 12))
+```
+
+## Điều chỉnh tham số mô hình (Hyperparameter Tuning)
+```{r}
+# Tìm tham số tối ưu cho mô hình SVM với kernel RBF
+tune_result <- tune.svm(Species ~ ., 
+                      data = trainData, 
+                      kernel = "radial",
+                      gamma = 10^(-3:1),
+                      cost = 10^(0:3))
+
+# Xem kết quả điều chỉnh
+print(tune_result)
+```
+
+```{r}
+# Trực quan hóa kết quả điều chỉnh tham số
+plot(tune_result, 
+     main = "Kết quả điều chỉnh tham số cho kernel RBF",
+     xlab = "Cost (log10 scale)",
+     ylab = "Gamma (log10 scale)")
+```
+
+```{r}
+# Xây dựng mô hình SVM với tham số tối ưu
+svm_tuned <- svm(Species ~ ., 
+                data = trainData, 
+                type = "C-classification", 
+                kernel = "radial", 
+                cost = tune_result$best.parameters$cost,
+                gamma = tune_result$best.parameters$gamma)
+
+# Đánh giá mô hình với tham số tối ưu
+pred_tuned <- predict(svm_tuned, testData)
+confusionMatrix(pred_tuned, testData$Species)
+```
+
+# Ưu và nhược điểm của SVM
+
+## Ưu điểm
+1. **Hiệu quả trong không gian nhiều chiều**: SVM xử lý tốt khi số lượng chiều lớn hơn số mẫu.
+2. **Linh hoạt với các kernel khác nhau**: Có thể áp dụng nhiều kernel khác nhau cho các bài toán khác nhau.
+3. **Khả năng tổng quát hóa tốt**: Mô hình SVM thường có khả năng tổng quát hóa tốt để phân loại các mẫu mới.
+4. **Mạnh mẽ với dữ liệu ngoại lai (outliers)**: Chỉ sử dụng các support vectors để xác định siêu phẳng quyết định.
+
+## Nhược điểm
+1. **Khó khăn với bộ dữ liệu lớn**: SVM không hoạt động hiệu quả với bộ dữ liệu lớn (có nhiều mẫu).
+2. **Độ phức tạp về mặt tính toán**: Việc huấn luyện có thể tốn nhiều thời gian cho dữ liệu lớn.
+3. **Khó xác định tham số tối ưu**: Việc chọn kernel và các tham số phù hợp có thể phức tạp.
+4. **Khó giải thích kết quả**: Các kết quả từ SVM khó giải thích hơn so với các thuật toán đơn giản khác.
+
+# Tổng kết và kết luận
+SVM là một thuật toán mạnh mẽ cho các bài toán phân loại và hồi quy, đặc biệt hiệu quả khi làm việc với dữ liệu có số chiều cao. Thông qua ví dụ với bộ dữ liệu Iris, chúng ta đã thấy SVM có thể đạt được độ chính xác cao trong phân loại các loài hoa.
+
+Trong bài thực hành này, chúng ta đã:
+- Tìm hiểu về nguyên lý cơ bản của SVM
+- Áp dụng SVM với các kernel khác nhau (tuyến tính và RBF)
+- Đánh giá hiệu suất của các mô hình
+- Điều chỉnh tham số để cải thiện mô hình
+
+Việc lựa chọn kernel phù hợp và điều chỉnh tham số đóng vai trò quan trọng trong việc xây dựng mô hình SVM hiệu quả. Tùy vào đặc điểm của bộ dữ liệu và yêu cầu của bài toán, chúng ta có thể lựa chọn các thiết lập khác nhau cho SVM.
+
+# Tài liệu tham khảo
+1. Cortes, C., & Vapnik, V. (1995). Support-vector networks. *Machine learning*, 20(3), 273-297.
+2. Meyer, D., & Wien, F. H. T. (2015). Support vector machines. *The Interface to libsvm in package e1071*.
+3. James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). *An introduction to statistical learning*. Springer.
+4. Karatzoglou, A., Meyer, D., & Hornik, K. (2006). Support Vector Machines in R. *Journal of Statistical Software*, 15(9), 1-28.
