@@ -1,9 +1,13 @@
 {
     "sortOrder": [
         {
+            "columnIndex": 1,
+            "ascending": true
+        },
+        {
             "columnIndex": 2,
             "ascending": true
         }
     ],
-    "path": "D:/R-Intro/R-Intro/Lab-06"
+    "path": "D:/R-Intro/R-Intro/Lab-07"
 }

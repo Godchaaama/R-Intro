@@ -1,0 +1,31 @@
+---
+title: "32-SVM-RMarkdown"
+author: "Le Nhat Tung"
+output:
+  pdf_document:
+    # latex_engine: xelatex
+    number_sections: true
+    fig_caption: true
+    fig_height: 5
+    fig_width: 7
+    highlight: tango
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{fontspec}
+- \setmainfont{Times New Roman}
+---
+
+# Giới thiệu về SVM
+
+**Support Vector Machine (SVM)** là một trong những thuật toán học máy có giám sát (supervised learning) phổ biến nhất. SVM được sử dụng rộng rãi trong các bài toán phân loại (classification) và hồi quy (regression).
+
+## Ý tưởng chính của SVM là gì?
+
+Hãy tưởng tượng bạn có một tập dữ liệu gồm nhiều điểm thuộc hai lớp khác nhau (ví dụ: hoa màu đỏ và hoa màu xanh). SVM cố gắng tìm một đường thẳng (trong không gian 2D) hoặc một siêu phẳng (hyperplane) (trong không gian nhiều chiều) tốt nhất để phân tách hai lớp dữ liệu này.
+
+!["Mo ta SVM"](D:/R-Intro/R-Intro/Lab-07/images/img1.png)
+
+<!-- https://upload.wikimedia.org/wikipedia/commons/2/2a/Svm_max_sep_hyperplane_with_margin.png -->
+
+Đường thẳng "tốt nhất" là đường có **lề (margin) lớn nhất** - tức là khoảng cách từ đường đến các điểm dữ liệu gần nhất của mỗi lớp là lớn nhất.
