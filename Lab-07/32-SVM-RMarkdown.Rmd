@@ -20,6 +20,8 @@ header-includes:
   - \usepackage{fontspec}
   - \setsansfont{Arial}
 ---
+
+
 # Giới thiệu về SVM
 
 **Support Vector Machine (SVM)** là một trong những thuật toán học máy có giám sát (supervised learning) phổ biến nhất. SVM được sử dụng rộng rãi trong các bài toán phân loại (classification) và hồi quy (regression).
