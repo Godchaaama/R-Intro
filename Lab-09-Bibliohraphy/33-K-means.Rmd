@@ -19,6 +19,10 @@ header-includes:
 - \usepackage{graphicx}
 - \usepackage{fontspec}
 - \setmainfont{Times New Roman}
+
+bibliography: Library.bib
+csl: ieee.csl
+# Bạn có thể tùy chỉnh kiểu trích dẫn bằng cách sử dụng file CSL (Citation Style Language). Tải file CSL từ Zotero Style Repository https://www.zotero.org/styles và khai báo trong YAML header.
 ---
 
 ```{r setup, include=FALSE}
@@ -31,7 +35,7 @@ Sys.setlocale("LC_ALL", "Vietnamese")
 
 ## Thuật toán phân cụm K-Means là gì?
 
-**K-Means** là một trong những thuật toán phân cụm (clustering) phổ biến nhất trong học máy không giám sát (unsupervised learning). Thuật toán này nhằm mục đích phân chia một tập dữ liệu thành K cụm (clusters) khác nhau, trong đó mỗi điểm dữ liệu thuộc về cụm có trung tâm (centroid) gần nhất @hannun_deep_2014.
+**K-Means** là một trong những thuật toán phân cụm (clustering) phổ biến nhất trong học máy không giám sát (unsupervised learning). Thuật toán này nhằm mục đích phân chia một tập dữ liệu thành K cụm (clusters) khác nhau, trong đó mỗi điểm dữ liệu thuộc về cụm có trung tâm (centroid) gần nhất [@arik_deep_2017].
 
 Mục tiêu chính của K-Means là giảm thiểu tổng bình phương khoảng cách giữa các điểm dữ liệu và trung tâm cụm của chúng, được gọi là **Within-Cluster Sum of Squares (WCSS)**:
 
@@ -77,7 +81,7 @@ clusplot(data, km$cluster, color=TRUE, shade=TRUE,
 
 ## Các bước của thuật toán K-Means
 
-Thuật toán K-Means hoạt động theo các bước sau:
+Theo nghien cuu cua @nuraini_identification_2022-1 Thuật toán K-Means hoạt động theo các bước sau [@nuraini_identification_2022-1]:
 
 1. **Khởi tạo**: Chọn K điểm làm trung tâm cụm ban đầu (có thể ngẫu nhiên hoặc theo chiến lược khác)
 
@@ -375,5 +379,7 @@ fviz_cluster(km_result, data = synthetic_data,
              ggtheme = theme_minimal(),
              main = "Ket qua phan cum K-Means (K=3)")
 ```
+
+
 
 # References
