@@ -5,7 +5,7 @@ output: html_document
 
 <!-- Bai tap tinh diem -->
 
-<!-- Ap dung k-means, DBSCAN, phan cum so sanh va danh -->
+<!-- Ap dung k-means, DBSCAN, phan cum, so sanh va danh gia -->
 
 <!-- Dataset: https://archive.ics.uci.edu/dataset/292/wholesale+customers -->
 
