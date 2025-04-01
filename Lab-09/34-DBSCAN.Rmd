@@ -1,0 +1,421 @@
+---
+title: "Phân cụm DBSCAN"
+author: "Le Nhat Tung"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+    fig_height: 5
+    fig_width: 7
+    highlight: tango
+  html_document: default
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{fontspec}
+  - \setmainfont{Times New Roman}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+# Đặt locale để hỗ trợ tiếng Việt trong đồ thị
+Sys.setlocale("LC_ALL", "Vietnamese")
+```
+
+
+# Giới thiệu về DBSCAN
+
+## Thuật toán phân cụm DBSCAN là gì?
+
+**DBSCAN** (Density-Based Spatial Clustering of Applications with Noise) là một thuật toán phân cụm dựa trên mật độ. Được giới thiệu bởi Martin Ester, Hans-Peter Kriegel, Jörg Sander, và Xiaowei Xu vào năm 1996, DBSCAN đã trở thành một trong những thuật toán phân cụm phổ biến nhất trong học máy không giám sát.
+
+Khác với K-Means dựa trên khoảng cách Euclidean và yêu cầu xác định trước số cụm, DBSCAN nhóm các điểm dựa trên mật độ của chúng trong không gian dữ liệu. Điều này giúp DBSCAN có nhiều ưu điểm:
+
+- Không cần biết trước số lượng cụm
+- Phát hiện được cụm có hình dạng tùy ý, không chỉ cụm hình cầu
+- Có khả năng phát hiện và loại bỏ nhiễu (outliers)
+- Hiệu quả với bộ dữ liệu lớn
+
+```{r, echo=FALSE, fig.width=7, fig.height=5, fig.cap="Minh hoa DBSCAN voi cac cum khac nhau"}
+# Tạo dữ liệu mẫu cho minh họa DBSCAN
+set.seed(123)
+
+# Tạo cụm hình tròn
+n1 <- 100
+t <- runif(n1, 0, 2*pi)
+r <- runif(n1, 0, 0.8)
+x1 <- r * cos(t)
+y1 <- r * sin(t)
+
+# Tạo cụm hình bán nguyệt
+n2 <- 100
+t <- runif(n2, -pi/2, pi/2)
+r <- runif(n2, 1.5, 2)
+x2 <- r * cos(t)
+y2 <- r * sin(t)
+
+# Tạo cụm hình tam giác
+n3 <- 80
+x3 <- runif(n3, -3, -1)
+y3 <- runif(n3, -1, 1)
+
+# Thêm một số điểm nhiễu
+n4 <- 20
+x4 <- runif(n4, -3, 3)
+y4 <- runif(n4, -3, 3)
+
+# Kết hợp dữ liệu
+x <- c(x1, x2, x3, x4)
+y <- c(y1, y2, y3, y4)
+true_labels <- c(rep(1, n1), rep(2, n2), rep(3, n3), rep(0, n4))
+data <- data.frame(x = x, y = y, label = factor(true_labels))
+
+# Áp dụng DBSCAN
+library(dbscan)
+db_result <- dbscan(data[, 1:2], eps = 0.3, MinPts  = 5)
+data$cluster <- factor(db_result$cluster)
+
+# Vẽ kết quả DBSCAN với ggplot2
+library(ggplot2)
+ggplot(data, aes(x = x, y = y, color = cluster)) +
+  geom_point(size = 2, alpha = 0.7) +
+  scale_color_manual(values = c("0" = "gray", "1" = "red", "2" = "blue", "3" = "green")) +
+  theme_minimal() +
+  labs(title = "Minh họa phân cụm với DBSCAN",
+       subtitle = "Nhận diện được cụm hình dạng tùy ý và phát hiện nhiễu",
+       x = "X", y = "Y",
+       color = "Cụm") +
+  theme(legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, face = "italic"))
+```
+
+## Các khái niệm cơ bản trong DBSCAN
+
+DBSCAN dựa trên một số khái niệm cơ bản:
+
+1. **Epsilon (ε)**: Bán kính vùng lân cận của một điểm
+
+2. **MinPts**: Số lượng điểm tối thiểu cần có trong vùng lân cận ε
+
+3. **Điểm lõi (Core point)**: Điểm có ít nhất MinPts điểm (bao gồm chính nó) trong vùng lân cận ε
+
+4. **Điểm biên (Border point)**: Điểm nằm trong vùng lân cận ε của điểm lõi nhưng không phải là điểm lõi
+
+5. **Điểm nhiễu (Noise point)**: Điểm không phải là điểm lõi hay điểm biên
+
+## Nguyên lý hoạt động của DBSCAN
+
+Thuật toán DBSCAN hoạt động theo các bước sau:
+
+1. **Khởi tạo**: Chọn một điểm ngẫu nhiên chưa được thăm
+
+2. **Mở rộng cụm**:
+   - Nếu điểm đó là điểm lõi (có ít nhất MinPts điểm trong vùng bán kính ε), tạo một cụm mới
+   
+   - Thêm tất cả các điểm trong vùng lân cận ε vào cụm
+   
+   - Tiếp tục mở rộng cụm theo cách tương tự cho các điểm lõi mới được thêm vào
+   
+   
+3. **Tiếp tục**: Chọn một điểm chưa thăm khác và lặp lại quá trình
+
+4. **Kết thúc**: Khi tất cả các điểm đã được thăm, các điểm không thuộc cụm nào được xác định là nhiễu
+
+
+```{r, echo=FALSE, fig.width=6, fig.height=4, fig.cap="Minh hoa nguyen ly DBSCAN"}
+# Tạo dữ liệu mẫu cho DBSCAN
+set.seed(123)
+# Tạo một cụm hình tròn
+n1 <- 100
+t <- runif(n1, 0, 2*pi)
+r <- runif(n1, 0, 0.8)
+x1 <- r * cos(t)
+y1 <- r * sin(t)
+# Tạo một cụm hình bán nguyệt
+n2 <- 100
+t <- runif(n2, -pi/2, pi/2)
+r <- runif(n2, 1.5, 2)
+x2 <- r * cos(t)
+y2 <- r * sin(t)
+# Thêm một số điểm nhiễu
+n3 <- 20
+x3 <- runif(n3, -2.5, 2.5)
+y3 <- runif(n3, -2.5, 2.5)
+# Kết hợp dữ liệu
+x <- c(x1, x2, x3)
+y <- c(y1, y2, y3)
+data <- data.frame(x = x, y = y)
+
+# Vẽ dữ liệu mẫu
+plot(data$x, data$y, pch=20, cex=0.8, 
+     xlab="X", ylab="Y", main="Minh hoa DBSCAN",
+     col="black", xlim=c(-3,3), ylim=c(-3,3))
+
+# Vẽ vùng epsilon cho một số điểm minh họa
+eps <- 0.5
+points(x[25], y[25], pch=20, col="red", cex=1.2)  # Điểm lõi
+draw_circle <- function(x, y, radius) {
+  angles <- seq(0, 2*pi, length.out=100)
+  xx <- x + radius * cos(angles)
+  yy <- y + radius * sin(angles)
+  lines(xx, yy, col="red", lty=2)
+}
+draw_circle(x[25], y[25], eps)
+
+points(x[150], y[150], pch=20, col="blue", cex=1.2)  # Điểm biên
+draw_circle(x[150], y[150], eps)
+
+points(x[210], y[210], pch=20, col="darkgray", cex=1.2)  # Điểm nhiễu
+draw_circle(x[210], y[210], eps)
+
+legend("topright", 
+       legend=c("Điểm dữ liệu", "Điểm lõi", "Điểm biên", "Điểm nhiễu", "Vùng ε"),
+       col=c("black", "red", "blue", "darkgray", "red"), 
+       pch=c(20, 20, 20, 20, NA), 
+       lty=c(NA, NA, NA, NA, 2),
+       cex=0.8)
+```
+
+# Cách xác định tham số cho DBSCAN
+
+Một trong những thách thức khi sử dụng DBSCAN là việc xác định hai tham số quan trọng: ε (epsilon) và MinPts. Không giống như K-Means, nơi chúng ta cần chọn K, DBSCAN đòi hỏi phải xác định mức độ "đông đúc" của các cụm.
+
+## Xác định MinPts
+
+MinPts xác định số lượng điểm tối thiểu cần có trong vùng lân cận để một điểm được coi là điểm lõi.
+
+**Hướng dẫn chọn MinPts**:
+- Một quy tắc thông thường là chọn MinPts ≥ D + 1, trong đó D là số chiều của dữ liệu
+- Với dữ liệu 2 chiều, MinPts = 4 thường là lựa chọn tốt
+- Với dữ liệu nhiều chiều hơn hoặc khi có nhiễu, có thể tăng MinPts lên (5-10)
+- MinPts càng lớn, thuật toán càng ổn định nhưng có thể bỏ qua các cụm nhỏ
+
+
+## Xác định Epsilon (ε)
+
+Epsilon xác định bán kính vùng lân cận. Đây thường là tham số khó xác định nhất và có ảnh hưởng lớn đến kết quả phân cụm.
+
+### 1. Phương pháp k-distance graph
+
+Phương pháp k-distance graph là cách phổ biến nhất để xác định ε phù hợp:
+
+1. Với mỗi điểm, tính khoảng cách đến điểm thứ k gần nhất (k = MinPts - 1)
+
+2. Sắp xếp các khoảng cách này theo thứ tự tăng dần
+
+3. Vẽ đồ thị k-distance
+
+4. Tìm "điểm gẩy" (elbow point) - điểm mà tại đó đường cong có sự thay đổi đáng kể
+
+5. Chọn ε tại điểm gẩy này
+
+```{r, fig.cap="Do thi k-distance de xac dinh epsilon"}
+# Cài đặt và nạp các gói cần thiết
+library(dbscan)  # Cho thuật toán DBSCAN
+library(factoextra)  # Cho trực quan hóa
+library(fpc)  # Cho đánh giá phân cụm
+library(ggplot2)  # Cho vẽ biểu đồ
+
+# Tạo dữ liệu mẫu cho DBSCAN
+set.seed(123)
+# Tạo một cụm hình tròn
+n1 <- 100
+t <- runif(n1, 0, 2*pi)
+r <- runif(n1, 0, 0.8)
+x1 <- r * cos(t)
+y1 <- r * sin(t)
+# Tạo một cụm hình bán nguyệt
+n2 <- 100
+t <- runif(n2, -pi/2, pi/2)
+r <- runif(n2, 1.5, 2)
+x2 <- r * cos(t)
+y2 <- r * sin(t)
+# Thêm một số điểm nhiễu
+n3 <- 20
+x3 <- runif(n3, -2.5, 2.5)
+y3 <- runif(n3, -2.5, 2.5)
+# Kết hợp dữ liệu
+x <- c(x1, x2, x3)
+y <- c(y1, y2, y3)
+synthetic_data <- data.frame(x = x, y = y)
+
+# Tính khoảng cách k-nearest neighbors
+k <- 4
+knn_dists <- kNNdist(synthetic_data, k = k)
+
+# Sắp xếp khoảng cách và vẽ đồ thị
+eps_candidates <- sort(knn_dists)
+plot(eps_candidates, type = "l", 
+     xlab = "Điểm dữ liệu (đã sắp xếp)",
+     ylab = paste("Khoảng cách đến điểm thứ", k, "gần nhất"),
+     main = "Phương pháp k-distance")
+
+# Tìm điểm gẩy (có thể bằng thuật toán hoặc quan sát)
+# Ví dụ đơn giản: tìm điểm có độ cong lớn
+eps_diff <- diff(eps_candidates, differences = 2)
+eps_index <- which.max(eps_diff)
+eps_value <- eps_candidates[eps_index]
+
+# Đánh dấu điểm gẩy
+points(eps_index, eps_candidates[eps_index], col = "red", pch = 19)
+text(eps_index, eps_candidates[eps_index], 
+     labels = paste("ε ≈", round(eps_candidates[eps_index], 2)), 
+     pos = 4, col = "red")
+
+# Vẽ đường thẳng tại điểm gẩy
+abline(h = eps_candidates[eps_index], col = "red", lty = 2)
+```
+
+## So sánh các tham số khác nhau
+
+Để hiểu rõ hơn về ảnh hưởng của các tham số, có thể thử nghiệm với nhiều cặp (ε, MinPts) khác nhau:
+
+```{r, fig.cap="So sanh ket qua voi cac tham so khac nhau"}
+# Tạo lưới các tham số
+eps_values <- c(0.2, 0.5, 0.8)
+minPts_values <- c(3, 5)
+
+# Tạo lưới plot
+par(mfrow = c(length(minPts_values), length(eps_values)))
+par(mar = c(4, 4, 2, 1))
+
+# Áp dụng DBSCAN với các tham số khác nhau
+for (minPts in minPts_values) {
+  for (eps in eps_values) {
+    # Áp dụng DBSCAN
+    db <- dbscan(synthetic_data, eps = eps, minPts = minPts)
+    
+    # Vẽ kết quả
+    plot(synthetic_data, col = db$cluster + 1, pch = 20, cex = 0.8,
+         main = paste("ε =", eps, ", MinPts =", minPts),
+         xlab = "X", ylab = "Y")
+    
+    # Hiển thị số lượng cụm và điểm nhiễu
+    n_clusters <- max(db$cluster)
+    n_noise <- sum(db$cluster == 0)
+    legend("topright", 
+           legend = c(paste("Cụm:", n_clusters), 
+                      paste("Nhiễu:", n_noise)),
+           cex = 0.7, bty = "n")
+  }
+}
+```
+
+# Đánh giá chất lượng phân cụm DBSCAN
+
+Đánh giá chất lượng phân cụm DBSCAN có một số khác biệt so với đánh giá K-Means, do đặc tính dựa trên mật độ và khả năng phát hiện nhiễu của DBSCAN.
+
+## Đánh giá nội tại (Internal Evaluation)
+
+### 1. Silhouette Coefficient
+
+
+Chỉ số Silhouette vẫn có thể được sử dụng cho DBSCAN, nhưng cần lưu ý rằng điểm nhiễu (có nhãn cụm = 0) sẽ không được đưa vào tính toán.
+
+```{r, fig.cap="Chi so Silhouette cho DBSCAN"}
+# Áp dụng DBSCAN với tham số phù hợp
+db_result <- dbscan(synthetic_data, eps = 0.5, minPts = 5)
+
+# Tính Silhouette (chỉ cho các điểm không phải nhiễu)
+non_noise <- which(db_result$cluster > 0)
+if (length(unique(db_result$cluster[non_noise])) > 1) {
+  sil <- silhouette(db_result$cluster[non_noise], 
+                   dist(synthetic_data[non_noise, ]))
+  
+  # Vẽ biểu đồ Silhouette
+  plot(sil, main = "Silhouette plot cho DBSCAN",
+       col = unique(db_result$cluster[non_noise]))
+  
+  # Tính điểm Silhouette trung bình
+  avg_sil <- mean(sil[, 3])
+  cat("Điểm Silhouette trung bình:", avg_sil, "\n")
+} else {
+  cat("Không thể tính Silhouette: chỉ tìm thấy 1 cụm (không tính nhiễu)\n")
+}
+```
+
+### 2. Tỷ lệ nhiễu (Noise Ratio)
+
+Một chỉ số đặc biệt cho DBSCAN là tỷ lệ điểm nhiễu. Tỷ lệ này không nên quá cao hoặc quá thấp:
+- Tỷ lệ cao: Có thể ε quá nhỏ hoặc MinPts quá lớn
+- Tỷ lệ thấp: Có thể ε quá lớn, gom các cụm riêng biệt lại với nhau
+
+```{r}
+# Tính tỷ lệ nhiễu
+noise_ratio <- sum(db_result$cluster == 0) / length(db_result$cluster)
+cat("Tỷ lệ nhiễu:", noise_ratio, "\n")
+```
+
+### 3. Mật độ các cụm (Cluster Density)
+
+Một chỉ số quan trọng khác là mật độ của các cụm, được đo bằng số điểm trên đơn vị thể tích:
+
+```{r}
+# Tính mật độ các cụm
+cluster_density <- numeric(max(db_result$cluster))
+for (i in 1:max(db_result$cluster)) {
+  cluster_points <- synthetic_data[db_result$cluster == i, ]
+  # Ước lượng thể tích bằng tích của phạm vi trên mỗi chiều
+  volume <- prod(apply(cluster_points, 2, function(x) diff(range(x))))
+  # Mật độ = số điểm / thể tích
+  cluster_density[i] <- nrow(cluster_points) / volume
+}
+
+# Hiển thị mật độ các cụm
+cat("Mật độ các cụm:", cluster_density, "\n")
+```
+
+### 4. Davies-Bouldin Index và Calinski-Harabasz Index
+
+Các chỉ số này cũng có thể được sử dụng cho DBSCAN, nhưng cần điều chỉnh để loại bỏ các điểm nhiễu:
+
+```{r}
+# Tính Calinski-Harabasz Index (chỉ cho các điểm không phải nhiễu)
+if (length(unique(db_result$cluster[non_noise])) > 1) {
+  ch_index <- calinhara(synthetic_data[non_noise, ], 
+                        db_result$cluster[non_noise])
+  cat("Calinski-Harabasz Index:", ch_index, "\n")
+} else {
+  cat("Không thể tính CH Index: chỉ tìm thấy 1 cụm (không tính nhiễu)\n")
+}
+```
+
+## Đánh giá ngoại tại (External Evaluation)
+
+Nếu có nhãn thực tế, các chỉ số đánh giá ngoại tại như Adjusted Rand Index (ARI) và Normalized Mutual Information (NMI) có thể được sử dụng. Cần lưu ý rằng DBSCAN phân loại một số điểm là nhiễu (nhãn 0), nên cần xử lý phù hợp.
+
+```{r}
+# Giả sử chúng ta có nhãn đúng (ground truth)
+# Trong thực tế, chúng ta cần dữ liệu có nhãn
+# Ở đây, chúng ta tạo nhãn giả dựa trên cách tạo dữ liệu
+true_labels <- c(rep(1, n1), rep(2, n2), rep(0, n3))  # 0 đại diện cho nhiễu
+
+# Tính Adjusted Rand Index
+library(fossil)
+adj_rand <- adj.rand.index(true_labels, db_result$cluster)
+cat("Adjusted Rand Index:", adj_rand, "\n")
+
+# Tính Normalized Mutual Information
+library(aricode)
+nmi <- NMI(true_labels, db_result$cluster)
+cat("Normalized Mutual Information:", nmi, "\n")
+```
+
+# Trực quan hóa kết quả DBSCAN
+
+Trực quan hóa là một phần quan trọng để hiểu kết quả phân cụm DBSCAN, đặc biệt là hình dạng của các cụm và vị trí của các điểm nhiễu.
+
+```{r, fig.cap="Ket qua phan cum DBSCAN"}
+# Trực quan hóa kết quả DBSCAN
+fviz_cluster(list(data = synthetic_data, cluster = db_result$cluster),
+             palette = c("black", "red", "blue"),  # màu đen cho nhiễu
+             geom = "point",
+             ellipse = FALSE,
+             ggtheme = theme_minimal(),
+             main = "Kết quả phân cụm DBSCAN")
+```
+
+

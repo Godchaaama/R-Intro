@@ -1,0 +1,11 @@
+---
+title: "35-BaiTapTinhDiem"
+output: html_document
+---
+
+<!-- Bai tap tinh diem -->
+
+<!-- Ap dung k-means, DBSCAN, phan cum so sanh va danh -->
+
+<!-- Dataset: https://archive.ics.uci.edu/dataset/292/wholesale+customers -->
+
