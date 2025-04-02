@@ -1,0 +1,12 @@
+---
+title: "38-UMAP"
+output: html_document
+---
+
+<!--
+
+- Mở rộng sang UMAP
+- Sử dụng mtcars
+- Soạn thảo/ trình bày tương tự như PCA / t-SNE
+
+-->
