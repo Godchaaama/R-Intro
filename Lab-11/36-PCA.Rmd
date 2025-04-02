@@ -81,13 +81,237 @@ summary(mtcars)
 Bộ dữ liệu mtcars chứa thông tin về 32 mẫu xe với 11 biến mô tả các đặc điểm kỹ thuật:
 
   - mpg: Miles per gallon (hiệu suất tiêu thụ nhiên liệu)
+  
   - cyl: Số xi-lanh
+  
   - disp: Dung tích xi-lanh
+  
   - hp: Mã lực
+  
   - drat: Tỷ số truyền động sau 
+  
   - wt: Trọng lượng (1000 lbs)
+  
   - qsec: Thời gian chạy 1/4 dặm
+  
   - vs: Kiểu động cơ (0 = chữ V, 1 = thẳng hàng)
+  
   - am: Kiểu hộp số (0 = tự động, 1 = số sàn)
+  
   - gear: Số lượng số
+  
   - carb: Số lượng bộ chế hòa khí
+
+## Phân tích tương quan
+
+Trước khi thực hiện PCA, chúng ta hãy xem các biến có tương quan như thế nào:
+
+```{r}
+
+# Tạo ma trận tương quan
+cor_matrix <- cor(mtcars)
+round(cor_matrix, 2)
+
+# Visualize correlation matrix
+ggcorr(mtcars, 
+       method = c("everything", "pearson"), 
+       label = TRUE, 
+       hjust = 0.75, 
+       size = 3, 
+       layout.exp = 2)
+
+```
+
+Qua ma trận tương quan, chúng ta thấy nhiều biến có tương quan mạnh với nhau. Ví dụ:
+
+- cyl, disp, hp và wt có tương quan dương mạnh với nhau
+
+- Các biến trên có tương quan âm mạnh với mpg
+
+Điều này chỉ ra rằng dữ liệu có thể có đa cộng tuyến và phù hợp để áp dụng PCA.
+
+
+## Thực hiện PCA
+
+```{r}
+
+# Chuẩn hóa dữ liệu (center và scale)
+mtcars_scaled <- scale(mtcars)
+
+# Thực hiện PCA
+?prcomp
+pca_result <- prcomp(mtcars_scaled, center = TRUE, scale.=TRUE)
+
+# Xem kết quả
+summary(pca_result)
+
+```
+## Phân tích các thành phần chính
+
+Phương sai giải thích bởi mỗi thành phần
+
+```{r}
+
+fviz_eig(pca_result, 
+         addlabels = TRUE, 
+         ylim = c(0, 50),
+         main = "Phương sai giải thích bởi mỗi thành phần chính",
+         xlab = "Thành phần chính",
+         ylab = "Phần trăm phương sai giải thích")
+
+```
+Ý nghĩa thực tế của biểu đồ này:
+
+  - Hai thành phần chính đầu tiên (PC1 và PC2) đã giải thích khoảng 84% phương sai (60% + 24.1%)
+  - Điều này có nghĩa là bạn có thể giảm số chiều dữ liệu từ 10 xuống còn 2 mà vẫn giữ được phần lớn thông tin
+  - Theo quy tắc "elbow" (điểm gấp khúc), bạn có thể chọn giữ lại 2-3 thành phần chính đầu tiên vì sau PC3, lượng phương sai giải thích giảm đáng kể
+
+
+Scree plot kết hợp với phương sai tích lũy
+
+```{r}
+
+# Tính phương sai giải thích
+var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
+cum_var_explained <- cumsum(var_explained)
+
+# Tạo dataframe cho biểu đồ
+var_df <- data.frame(
+  PC = 1:length(var_explained),
+  Variance = var_explained,
+  Cumulative = cum_var_explained
+)
+
+# Vẽ biểu đồ
+ggplot(var_df, aes(x = PC)) +
+  geom_col(aes(y = Variance), fill = "steelblue") +
+  geom_line(aes(y = Cumulative), color = "red", size = 1) +
+  geom_point(aes(y = Cumulative), color = "red", size = 3) +
+  scale_y_continuous(name = "Phương sai giải thích",
+                     sec.axis = sec_axis(~., name = "Phương sai tích lũy")) +
+  labs(title = "Scree plot với phương sai tích lũy",
+       x = "Thành phần chính") +
+  theme_minimal()
+
+```
+
+Đường màu đỏ thể hiện phương sai tích lũy - tổng phương sai được giải thích khi kết hợp các thành phần chính phía trước.
+
+
+```{r}
+
+# Biplot
+fviz_pca_biplot(pca_result, 
+                label = "var",
+                col.ind = "cos2",
+                gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                repel = TRUE,
+                title = "PCA Biplot: Biến và Quan sát")
+
+```
+
+Phân tích đóng góp của các biến vào thành phần chính
+
+```{r}
+
+# Contribution of variables to PC1
+fviz_contrib(pca_result, choice = "var", axes = 1, top = 11)
+
+# Contribution of variables to PC2
+fviz_contrib(pca_result, choice = "var", axes = 2, top = 11)
+
+```
+
+Trực quan hóa quan sát trên không gian mới
+
+```{r}
+
+# Vẽ các quan sát trên không gian PC1 và PC2
+# Thêm tên của từng xe
+fviz_pca_ind(pca_result, 
+             col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+```
+
+## Sử dụng PCA cho phân loại
+
+Chúng ta sẽ thêm thông tin về loại động cơ (vs) và kiểu hộp số (am) để xem liệu PCA có thể phân tách các nhóm xe này hay không:
+
+
+```{r}
+
+# Tạo dataframe với thông tin về loại động cơ và hộp số
+mtcars_info <- mtcars %>%
+  mutate(vs_factor = factor(vs, labels = c("V-shaped", "Straight")),
+         am_factor = factor(am, labels = c("Automatic", "Manual")))
+
+# Trực quan hóa theo kiểu động cơ
+p1 <- fviz_pca_ind(pca_result,
+             geom.ind = "point",
+             col.ind = mtcars_info$vs_factor,
+             palette = c("#FC4E07", "#00AFBB"),
+             addEllipses = TRUE,
+             legend.title = "Engine Type",
+             title = "PCA by Engine Type")
+
+# Trực quan hóa theo kiểu hộp số
+p2 <- fviz_pca_ind(pca_result,
+             geom.ind = "point",
+             col.ind = mtcars_info$am_factor,
+             palette = c("#FC4E07", "#00AFBB"),
+             addEllipses = TRUE,
+             legend.title = "Transmission",
+             title = "PCA by Transmission Type")
+
+# Hiển thị cả hai biểu đồ
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+
+```
+
+#  Giảm chiều dữ liệu
+
+## Lựa chọn số lượng thành phần
+
+Có một số tiêu chí:
+
+  - Kaiser's rule: Giữ các thành phần có eigenvalue > 1
+  
+  - Elbow method: Chọn điểm gãy trên scree plot
+  
+  - Phương sai tích lũy: Giữ đủ số thành phần để giải thích ít nhất 80-90% phương sai
+
+## Tạo dữ liệu đã giảm chiều
+
+# Lấy 2 thành phần chính đầu tiên
+
+```{r}
+pca_data_2d <- as.data.frame(pca_result$x[, 1:2])
+head(pca_data_2d)
+```
+
+# Lấy 4 thành phần chính đầu tiên
+```{r}
+pca_data_4d <- as.data.frame(pca_result$x[, 1:4])
+head(pca_data_4d)
+```
+
+
+
+## Kết hợp với mô hình khác
+
+Thêm mpg vào dữ liệu đã giảm chiều
+```{r}
+pca_data_with_mpg <- cbind(pca_data_4d, mpg = mtcars$mpg)
+
+
+# Xây dựng mô hình hồi quy
+lm_model <- lm(mpg ~ ., data = pca_data_with_mpg)
+summary(lm_model)
+
+
+```
+
+
+
