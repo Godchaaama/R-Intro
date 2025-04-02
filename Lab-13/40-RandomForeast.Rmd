@@ -1,0 +1,207 @@
+# Tải thư viện cần thiết
+library(randomForest)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(ggplot2)
+
+# Xem cấu trúc bộ dữ liệu mtcars
+str(mtcars)
+
+# Hiển thị một số dòng đầu tiên
+head(mtcars)
+
+# Tóm tắt thống kê
+summary(mtcars)
+
+# Chuyển đổi biến phân loại
+mtcars_prep <- mtcars
+mtcars_prep$am <- as.factor(mtcars$am)
+mtcars_prep$vs <- as.factor(mtcars$vs)
+mtcars_prep$cyl <- as.factor(mtcars$cyl)
+mtcars_prep$gear <- as.factor(mtcars$gear)
+mtcars_prep$carb <- as.factor(mtcars$carb)
+
+# Phân chia dữ liệu huấn luyện và kiểm tra
+set.seed(123)
+train_idx <- sample(1:nrow(mtcars_prep), 0.7 * nrow(mtcars_prep))
+train_data <- mtcars_prep[train_idx, ]
+test_data <- mtcars_prep[-train_idx, ]
+
+# Kiểm tra kích thước của các tập dữ liệu
+cat("Kích thước tập huấn luyện:", nrow(train_data), "\n")
+cat("Kích thước tập kiểm tra:", nrow(test_data), "\n")
+
+# Xây dựng mô hình Random Forest
+rf_model <- randomForest(am ~ ., 
+                        data = train_data, 
+                        ntree = 500,
+                        importance = TRUE)
+
+# In thông tin mô hình
+print(rf_model)
+
+# Vẽ biểu đồ lỗi theo số lượng cây
+plot(rf_model, main = "Lỗi của Random Forest theo số lượng cây")
+legend("topright", colnames(rf_model$err.rate), lty = 1:3, col = 1:3)
+
+# Dự đoán trên tập kiểm tra
+rf_predictions <- predict(rf_model, newdata = test_data)
+
+# Tạo ma trận nhầm lẫn
+conf_matrix <- table(Thuc_te = test_data$am, Du_doan = rf_predictions)
+print(conf_matrix)
+
+# Đánh giá độ chính xác
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+cat("Độ chính xác:", round(accuracy * 100, 2), "%\n")
+
+# Đánh giá chi tiết (nếu có confusionMatrix từ caret)
+if(require(caret)) {
+  evaluation <- confusionMatrix(rf_predictions, test_data$am)
+  print(evaluation)
+}
+
+# Hiển thị tầm quan trọng của đặc trưng
+importance(rf_model)
+
+# Vẽ biểu đồ tầm quan trọng
+varImpPlot(rf_model, main = "Tầm quan trọng của đặc trưng trong Random Forest",
+          sort = TRUE)
+
+# So sánh với Cây quyết định đơn lẻ
+tree_model <- rpart(am ~ ., data = train_data, method = "class")
+
+# Vẽ cây quyết định
+rpart.plot(tree_model, main = "Cây quyết định cho bộ dữ liệu mtcars", 
+           extra = 101, under = TRUE, cex = 0.8)
+
+# Dự đoán với cây quyết định
+tree_predictions <- predict(tree_model, newdata = test_data, type = "class")
+
+# Tạo ma trận nhầm lẫn
+tree_conf_matrix <- table(Thuc_te = test_data$am, Du_doan = tree_predictions)
+print(tree_conf_matrix)
+
+# Đánh giá độ chính xác
+tree_accuracy <- sum(diag(tree_conf_matrix)) / sum(tree_conf_matrix)
+cat("Độ chính xác của Cây quyết định:", round(tree_accuracy * 100, 2), "%\n")
+cat("Độ chính xác của Random Forest:", round(accuracy * 100, 2), "%\n")
+
+# Tìm số lượng đặc trưng tối ưu (mtry)
+mtry_tuning <- function(mtry_values) {
+  oob_errors <- numeric(length(mtry_values))
+  
+  for (i in seq_along(mtry_values)) {
+    set.seed(123)
+    rf <- randomForest(am ~ ., data = train_data, 
+                      ntree = 500, mtry = mtry_values[i])
+    oob_errors[i] <- rf$err.rate[500, 1]  # Lấy OOB error ở cây cuối cùng
+  }
+  
+  return(data.frame(mtry = mtry_values, oob_error = oob_errors))
+}
+
+# Thử nghiệm các giá trị mtry
+max_features <- ncol(train_data) - 1  # Trừ đi biến mục tiêu
+mtry_values <- 1:max_features
+mtry_results <- mtry_tuning(mtry_values)
+
+# Vẽ biểu đồ
+ggplot(mtry_results, aes(x = mtry, y = oob_error)) +
+  geom_line(color = "blue") +
+  geom_point(size = 3) +
+  labs(title = "OOB Error theo giá trị mtry",
+       x = "mtry (Số đặc trưng xem xét tại mỗi phân chia)",
+       y = "OOB Error Rate") +
+  theme_minimal()
+
+# Tìm giá trị mtry tối ưu
+optimal_mtry <- mtry_results$mtry[which.min(mtry_results$oob_error)]
+cat("Giá trị mtry tối ưu:", optimal_mtry, "\n")
+
+# Xây dựng mô hình với mtry tối ưu
+set.seed(123)
+rf_optimal <- randomForest(am ~ ., data = train_data, 
+                          ntree = 1000, mtry = optimal_mtry,
+                          importance = TRUE)
+
+# Phân tích lỗi theo số lượng cây
+oob_errors <- data.frame(
+  ntree = 1:1000,
+  oob_error = rf_optimal$err.rate[, 1]
+)
+
+# Vẽ biểu đồ
+ggplot(oob_errors, aes(x = ntree, y = oob_error)) +
+  geom_line(color = "blue") +
+  labs(title = "OOB Error theo số lượng cây",
+       x = "Số lượng cây (ntree)",
+       y = "OOB Error Rate") +
+  theme_minimal()
+
+# Tìm số lượng cây tối ưu
+optimal_ntree <- which.min(oob_errors$oob_error)
+cat("Số lượng cây tối ưu:", optimal_ntree, "\n")
+
+# Xây dựng mô hình Random Forest với tham số tối ưu
+set.seed(123)
+rf_final <- randomForest(am ~ ., data = train_data, 
+                        ntree = optimal_ntree, mtry = optimal_mtry,
+                        importance = TRUE)
+
+# Dự đoán và đánh giá
+rf_final_predictions <- predict(rf_final, newdata = test_data)
+final_conf_matrix <- table(Thuc_te = test_data$am, Du_doan = rf_final_predictions)
+final_accuracy <- sum(diag(final_conf_matrix)) / sum(final_conf_matrix)
+
+cat("Độ chính xác của mô hình tối ưu:", round(final_accuracy * 100, 2), "%\n")
+
+# Random Forest cho bài toán hồi quy - dự đoán mpg
+# Phân chia dữ liệu huấn luyện và kiểm tra
+set.seed(123)
+train_index_reg <- sample(1:nrow(mtcars), 0.7 * nrow(mtcars))
+train_reg <- mtcars[train_index_reg, ]
+test_reg <- mtcars[-train_index_reg, ]
+
+# Xây dựng mô hình Random Forest cho hồi quy
+rf_reg <- randomForest(mpg ~ ., data = train_reg, 
+                      ntree = 500, importance = TRUE)
+
+# In thông tin mô hình
+print(rf_reg)
+
+# Dự đoán và đánh giá
+rf_reg_pred <- predict(rf_reg, newdata = test_reg)
+
+# Tính MSE và RMSE
+mse <- mean((test_reg$mpg - rf_reg_pred)^2)
+rmse <- sqrt(mse)
+
+# Tính R-squared
+sst <- sum((test_reg$mpg - mean(test_reg$mpg))^2)
+ssr <- sum((test_reg$mpg - rf_reg_pred)^2)
+r_squared <- 1 - (ssr / sst)
+
+cat("MSE:", round(mse, 4), "\n")
+cat("RMSE:", round(rmse, 4), "\n")
+cat("R-squared:", round(r_squared, 4), "\n")
+
+# Phân tích tầm quan trọng của đặc trưng trong dự đoán mpg
+varImpPlot(rf_reg, main = "Tầm quan trọng của đặc trưng trong dự đoán MPG",
+          sort = TRUE)
+
+# So sánh giá trị thực tế và dự đoán
+prediction_data <- data.frame(
+  Actual = test_reg$mpg,
+  Predicted = rf_reg_pred
+)
+
+# Vẽ biểu đồ so sánh
+ggplot(prediction_data, aes(x = Actual, y = Predicted)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  labs(title = "So sánh giá trị thực tế và dự đoán MPG",
+       x = "MPG thực tế",
+       y = "MPG dự đoán") +
+  theme_minimal()
