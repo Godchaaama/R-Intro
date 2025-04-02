@@ -1,0 +1,498 @@
+---
+title: "Cây quyết định trong Học máy"
+author: "Le Nhat Tung"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+    fig_height: 5
+    fig_width: 7
+    highlight: tango
+  html_document: default
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{fontspec}
+  - \setmainfont{Times New Roman}
+---
+
+# Giới thiệu về Cây quyết định (Decision Tree)
+
+## Khái niệm
+
+**Cây quyết định (Decision Tree)** là một mô hình học máy dạng cây, được sử dụng cho các bài toán phân loại và hồi quy. Cây quyết định hoạt động bằng cách chia dữ liệu thành các nhóm nhỏ hơn dựa trên các đặc trưng (features) của dữ liệu, tạo thành một cấu trúc cây với các quyết định ở mỗi nút.
+
+Cây quyết định có cấu trúc trực quan và dễ hiểu:
+
+  * **Nút gốc (Root node)**: Đỉnh của cây, đại diện cho toàn bộ dữ liệu
+  
+  * **Nút nội (Internal nodes)**: Các nút mà từ đó phân nhánh thành các nút con, đại diện cho các quyết định dựa trên đặc trưng
+  
+  * **Nút lá (Leaf nodes)**: Các nút cuối cùng chứa kết quả dự đoán (nhãn phân loại hoặc giá trị dự đoán)
+  
+  * **Nhánh (Branches)**: Kết nối giữa các nút, đại diện cho các giá trị có thể của đặc trưng
+
+## Ưu điểm của Cây quyết định
+
+  * **Dễ hiểu và diễn giải**: Cấu trúc cây trực quan, có thể dễ dàng giải thích cho người không có kiến thức chuyên sâu về học máy
+  
+  * **Ít yêu cầu tiền xử lý dữ liệu**: Không cần chuẩn hóa hoặc mã hóa biến, có thể xử lý cả dữ liệu số và dữ liệu phân loại
+  
+  * **Có thể xử lý dữ liệu thiếu**: Có khả năng xử lý các giá trị thiếu trong dữ liệu
+  
+  * **Tự động lựa chọn đặc trưng**: Tự động chọn các đặc trưng quan trọng nhất
+  
+  * **Nhanh trong dự đoán**: Quá trình dự đoán đơn giản và nhanh chóng
+
+## Hạn chế của Cây quyết định
+
+  * **Dễ bị overfitting**: Đặc biệt khi cây quá sâu, dễ học thuộc dữ liệu huấn luyện
+  
+  * **Không ổn định**: Thay đổi nhỏ trong dữ liệu có thể tạo ra cây hoàn toàn khác
+  
+  * **Hiệu suất hạn chế**: Đôi khi không hiệu quả bằng các mô hình phức tạp hơn
+  
+  * **Khó khăn với ranh giới phân loại chéo**: Không hiệu quả với ranh giới phân loại xiên hoặc phi tuyến
+  
+  * **Thiên kiến với các đặc trưng nhiều giá trị**: Có xu hướng ưu tiên các đặc trưng có nhiều giá trị khác nhau
+
+## Cách hoạt động của Cây quyết định
+
+Cây quyết định xây dựng mô hình dự đoán bằng cách chia dữ liệu thành các phần nhỏ hơn dựa trên những câu hỏi đơn giản:
+
+1. **Chọn đặc trưng tốt nhất để chia dữ liệu**: Sử dụng các độ đo như Gini impurity, entropy, hoặc mean squared error
+   
+2. **Chia dữ liệu thành các tập con**: Dựa trên đặc trưng được chọn
+   
+3. **Lặp lại quá trình**: Tiếp tục chia các tập con cho đến khi đạt điều kiện dừng
+   
+4. **Đưa ra dự đoán**: Kết quả dự đoán là giá trị phổ biến nhất (phân loại) hoặc giá trị trung bình (hồi quy) trong nút lá
+
+### Tiêu chí chia dữ liệu
+
+Có nhiều tiêu chí để quyết định nút nào sẽ được chia và đặc trưng nào sẽ được sử dụng:
+
+1. **Gini Impurity**: Đo lường mức độ "không thuần khiết" của một nút (càng thấp càng tốt)
+   
+   $$Gini = 1 - \sum_{i=1}^{n} (p_i)^2$$
+   
+   Trong đó p_i là tỷ lệ của lớp i trong nút.
+
+2. **Entropy**: Đo lường mức độ hỗn loạn của một nút
+   
+   $$Entropy = -\sum_{i=1}^{n} p_i \log_2(p_i)$$
+
+3. **Information Gain**: Chênh lệch entropy trước và sau khi chia
+   
+   $$IG = Entropy(parent) - \sum_{j=1}^{m} \frac{N_j}{N} Entropy(child_j)$$
+
+4. **Mean Squared Error (MSE)**: Sử dụng cho bài toán hồi quy
+   
+   $$MSE = \frac{1}{N} \sum_{i=1}^{N} (y_i - \bar{y})^2$$
+
+# Ứng dụng Cây quyết định với bộ dữ liệu iris
+
+## Tải thư viện cần thiết
+
+```{r}
+library(tidyverse)      # Bộ thư viện xử lý dữ liệu
+library(rpart)          # Thư viện xây dựng cây quyết định
+library(rpart.plot)     # Thư viện vẽ cây quyết định
+library(caret)          # Thư viện cho machine learning
+library(e1071)          # Thư viện hỗ trợ
+library(randomForest)   # Thư viện cho Random Forest (phần mở rộng)
+library(viridis)        # Bảng màu đẹp cho trực quan hóa
+```
+
+## Hiểu về bộ dữ liệu iris
+
+```{r}
+# Xem cấu trúc bộ dữ liệu iris
+str(iris)
+
+# Hiển thị một số dòng đầu tiên
+head(iris)
+
+# Tóm tắt thống kê
+summary(iris)
+
+# Trực quan hóa dữ liệu
+pairs(iris[1:4], main = "Bieu do cap cua bo du lieu Iris", 
+      pch = 21, bg = c("red", "green", "blue")[unclass(iris$Species)])
+legend("bottom", horiz = TRUE, legend = levels(iris$Species), 
+       fill = c("red", "green", "blue"))
+```
+
+Bộ dữ liệu iris chứa thông tin về 150 mẫu hoa thuộc 3 loài hoa iris với 4 đặc trưng đo lường:
+
+  - Sepal.Length: Chiều dài đài hoa (cm)
+  
+  - Sepal.Width: Chiều rộng đài hoa (cm)
+  
+  - Petal.Length: Chiều dài cánh hoa (cm)
+  
+  - Petal.Width: Chiều rộng cánh hoa (cm)
+  
+  - Species: Loài hoa (setosa, versicolor, virginica)
+
+## Phân chia dữ liệu huấn luyện và kiểm tra
+
+```{r}
+# Đặt seed để kết quả có thể tái tạo
+set.seed(123)
+
+# Tạo chỉ số ngẫu nhiên cho dữ liệu huấn luyện (80% dữ liệu)
+train_index <- sample(1:nrow(iris), 0.8 * nrow(iris))
+
+# Chia dữ liệu thành tập huấn luyện và tập kiểm tra
+train_data <- iris[train_index, ]
+test_data <- iris[-train_index, ]
+
+# Kiểm tra kích thước của các tập dữ liệu
+cat("Kích thước tập huấn luyện:", nrow(train_data), "\n")
+cat("Kích thước tập kiểm tra:", nrow(test_data), "\n")
+
+# Kiểm tra phân phối lớp trong tập huấn luyện
+table(train_data$Species)
+```
+
+## Xây dựng Cây quyết định đơn giản
+
+```{r}
+# Xây dựng mô hình cây quyết định
+tree_model <- rpart(Species ~ ., data = train_data, method = "class")
+
+# In mô hình
+print(tree_model)
+
+# Vẽ cây quyết định
+rpart.plot(tree_model, main = "Cay quyet dinh cho bo du lieu Iris", 
+           extra = 101, under = TRUE, cex = 0.8)
+```
+
+Giải thích cây quyết định:
+
+1. Nút gốc kiểm tra "Petal.Length < 2.5"
+   - Nếu đúng (≤ 2.5): Dự đoán là setosa
+   - Nếu sai (> 2.5): Tiếp tục xuống nút tiếp theo
+
+2. Tiếp theo kiểm tra "Petal.Width < 1.8"
+   - Nếu đúng (≤ 1.8): Kiểm tra "Petal.Length < 4.9"
+   - Nếu sai (> 1.8): Dự đoán là virginica
+
+3. Nếu "Petal.Length < 4.9"
+   - Nếu đúng (≤ 4.9): Dự đoán là versicolor
+   - Nếu sai (> 4.9): Kiểm tra "Petal.Width < 1.6"
+
+4. Và cứ tiếp tục như vậy...
+
+## Dự đoán và đánh giá mô hình
+
+```{r}
+# Dự đoán trên tập kiểm tra
+predictions <- predict(tree_model, newdata = test_data, type = "class")
+
+# Tạo ma trận nhầm lẫn
+conf_matrix <- table(Thuc_te = test_data$Species, Du_doan = predictions)
+print(conf_matrix)
+
+# Đánh giá độ chính xác
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+cat("Độ chính xác:", round(accuracy * 100, 2), "%\n")
+
+# Đánh giá chi tiết
+evaluation <- confusionMatrix(predictions, test_data$Species)
+print(evaluation)
+```
+
+## Điều chỉnh tham số (Hyperparameter Tuning)
+
+```{r}
+# Tạo lưới tham số để tìm kiếm
+param_grid <- expand.grid(
+  cp = seq(0.01, 0.1, by = 0.01)  # complexity parameter
+)
+
+# Thiết lập kiểm soát huấn luyện (10-fold cross-validation)
+train_control <- trainControl(
+  method = "cv",
+  number = 10,
+  verboseIter = FALSE
+)
+
+# Huấn luyện mô hình với các tham số khác nhau
+tuned_model <- train(
+  Species ~ .,
+  data = train_data,
+  method = "rpart",
+  trControl = train_control,
+  tuneGrid = param_grid
+)
+
+# In kết quả tìm kiếm tham số
+print(tuned_model)
+plot(tuned_model)
+
+# Lấy mô hình tốt nhất
+best_tree <- tuned_model$finalModel
+
+# Vẽ cây quyết định tốt nhất
+rpart.plot(best_tree, main = "Cây quyết định tối ưu", 
+           extra = 101, under = TRUE, cex = 0.8)
+```
+
+Giải thích:
+- Parameter cp (complexity parameter) kiểm soát kích thước của cây
+- cp càng nhỏ, cây càng phức tạp (có thể dẫn đến overfitting)
+- cp càng lớn, cây càng đơn giản (có thể dẫn đến underfitting)
+- Chọn cp tối ưu giúp cân bằng giữa độ phức tạp của mô hình và khả năng dự đoán
+
+## Đánh giá mô hình tối ưu
+
+```{r}
+# Dự đoán với mô hình tối ưu
+best_predictions <- predict(best_tree, newdata = test_data, type = "class")
+
+# Tạo ma trận nhầm lẫn
+best_conf_matrix <- table(Thực tế = test_data$Species, Dự đoán = best_predictions)
+print(best_conf_matrix)
+
+# Đánh giá độ chính xác
+best_accuracy <- sum(diag(best_conf_matrix)) / sum(best_conf_matrix)
+cat("Độ chính xác của mô hình tối ưu:", round(best_accuracy * 100, 2), "%\n")
+
+# Đánh giá chi tiết
+best_evaluation <- confusionMatrix(best_predictions, test_data$Species)
+print(best_evaluation)
+```
+
+## Phân tích tầm quan trọng của đặc trưng
+
+```{r}
+# Xem tầm quan trọng của các đặc trưng
+var_importance <- best_tree$variable.importance
+var_importance <- data.frame(
+  Feature = names(var_importance),
+  Importance = var_importance
+)
+
+# Sắp xếp theo tầm quan trọng giảm dần
+var_importance <- var_importance[order(-var_importance$Importance), ]
+
+# Vẽ biểu đồ tầm quan trọng
+ggplot(var_importance, aes(x = reorder(Feature, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Tam quan trong cua cac dac trung",
+       x = "Dac trung",
+       y = "Tam quan trong") +
+  theme_minimal()
+```
+
+Nhận xét:
+- Trong bộ dữ liệu Iris, Petal.Length và Petal.Width là các đặc trưng quan trọng nhất cho việc phân loại
+- Điều này phù hợp với quan sát trực quan từ biểu đồ cặp, nơi chúng ta có thể thấy sự phân tách rõ ràng hơn giữa các loài dựa trên các đặc trưng cánh hoa
+
+# Cải tiến mô hình Cây quyết định
+
+## Vấn đề Overfitting trong Cây quyết định
+
+Mặc dù Cây quyết định dễ hiểu, chúng thường bị overfitting, đặc biệt với dữ liệu phức tạp. Có nhiều cách để khắc phục vấn đề này:
+
+1. **Cắt tỉa cây (Pruning)**: Loại bỏ các nhánh không cần thiết
+2. **Giới hạn độ sâu tối đa**: Ngăn cây phát triển quá sâu
+3. **Yêu cầu số lượng mẫu tối thiểu tại nút lá**: Tránh phân chia quá chi tiết
+4. **Sử dụng các mô hình ensemble**: Như Random Forest, Gradient Boosting
+
+Trong phần này, chúng ta sẽ tập trung vào các kỹ thuật để cải thiện mô hình cây quyết định đơn lẻ, còn Random Forest sẽ được trình bày trong một bài giảng riêng biệt.
+
+# Ứng dụng Cây quyết định với bộ dữ liệu mtcars
+
+## Hiểu về bộ dữ liệu mtcars
+
+```{r}
+# Xem cấu trúc bộ dữ liệu mtcars
+str(mtcars)
+
+# Hiển thị một số dòng đầu tiên
+head(mtcars)
+
+# Tóm tắt thống kê
+summary(mtcars)
+```
+
+Bộ dữ liệu mtcars chứa thông tin về 32 mẫu xe với 11 biến mô tả các đặc điểm kỹ thuật. Chúng ta sẽ dự đoán biến `am` (kiểu hộp số: 0 = tự động, 1 = số sàn) dựa trên các đặc trưng khác.
+
+## Chuẩn bị dữ liệu
+
+```{r}
+# Chuyển đổi các biến phân loại
+mtcars$am <- as.factor(mtcars$am)
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$gear <- as.factor(mtcars$gear)
+mtcars$carb <- as.factor(mtcars$carb)
+
+# Phân chia dữ liệu huấn luyện và kiểm tra
+set.seed(123)
+train_index_cars <- sample(1:nrow(mtcars), 0.7 * nrow(mtcars))
+train_cars <- mtcars[train_index_cars, ]
+test_cars <- mtcars[-train_index_cars, ]
+```
+
+## Xây dựng và trực quan hóa Cây quyết định
+
+```{r}
+# Xây dựng mô hình cây quyết định
+tree_cars <- rpart(am ~ ., data = train_cars, method = "class")
+
+# Vẽ cây quyết định
+rpart.plot(tree_cars, main = "Cay quyet dinh du doan kieu hop so",
+           extra = 106, under = TRUE, cex = 0.8)
+
+# Dự đoán và đánh giá
+pred_cars <- predict(tree_cars, newdata = test_cars, type = "class")
+conf_matrix_cars <- table(Thuc_te = test_cars$am, Du_doan = pred_cars)
+print(conf_matrix_cars)
+
+# Độ chính xác
+accuracy_cars <- sum(diag(conf_matrix_cars)) / sum(conf_matrix_cars)
+cat("Độ chính xác:", round(accuracy_cars * 100, 2), "%\n")
+```
+
+## Phân tích quyết định
+
+Cây quyết định cho thấy những đặc điểm kỹ thuật nào quyết định việc một xe sử dụng hộp số tự động hay số sàn. Từ cây, chúng ta có thể rút ra các quy tắc đơn giản, ví dụ:
+- Nếu trọng lượng (wt) > X và mã lực (hp) < Y, xe có khả năng sử dụng hộp số tự động
+- Nếu trọng lượng (wt) < X, xe có khả năng sử dụng hộp số sàn
+
+Đây là một ví dụ về cách cây quyết định cung cấp giải thích rõ ràng cho các dự đoán của nó.
+
+# Các kỹ thuật nâng cao cho Cây quyết định
+
+## Cắt tỉa cây (Pruning)
+
+Cắt tỉa cây là kỹ thuật giảm kích thước cây để tránh overfitting.
+
+```{r}
+# Xây dựng cây đầy đủ
+full_tree <- rpart(Species ~ ., data = train_data, method = "class",
+                  control = rpart.control(cp = 0))
+
+# Vẽ biểu đồ cp để quyết định mức độ cắt tỉa
+plotcp(full_tree, main = "Sai so theo gia tri phuc tap (cp)")
+
+# Chọn giá trị cp tối ưu
+optimal_cp <- full_tree$cptable[which.min(full_tree$cptable[,"xerror"]),"CP"]
+cat("CP tối ưu:", optimal_cp, "\n")
+
+# Cắt tỉa cây
+pruned_tree <- prune(full_tree, cp = optimal_cp)
+
+# Vẽ cây sau khi cắt tỉa
+rpart.plot(pruned_tree, main = "Cây quyết định sau khi cắt tỉa",
+           extra = 101, under = TRUE, cex = 0.8)
+```
+
+## Cross-validation
+
+Cross-validation là kỹ thuật đánh giá mô hình bằng cách chia dữ liệu thành nhiều phần và huấn luyện/kiểm tra nhiều lần.
+
+```{r}
+# Thiết lập 5-fold cross-validation
+train_control <- trainControl(method = "cv", number = 5)
+
+# Huấn luyện mô hình với cross-validation
+cv_model <- train(
+  Species ~ .,
+  data = iris,
+  method = "rpart",
+  trControl = train_control,
+  tuneLength = 10
+)
+
+# In kết quả
+print(cv_model)
+plot(cv_model, main = "Ket qua Cross-validation theo gia tri cp")
+```
+
+# Hướng dẫn thực hành với Cây quyết định
+
+## Các bước xây dựng và đánh giá mô hình
+
+1. **Chuẩn bị dữ liệu**
+   - Xử lý dữ liệu thiếu
+   - Chuyển đổi biến phân loại sang dạng factor
+   - Phân chia tập huấn luyện và kiểm tra
+
+2. **Xây dựng mô hình**
+   - Chọn phương pháp phù hợp (classification hoặc regression)
+   - Thiết lập tham số ban đầu
+   - Huấn luyện mô hình
+
+3. **Điều chỉnh tham số**
+   - Tìm kiếm tham số tối ưu (complexity parameter)
+   - Sử dụng cross-validation để đánh giá
+
+4. **Đánh giá mô hình**
+   - Dự đoán trên tập kiểm tra
+   - Tính toán các chỉ số đánh giá (accuracy, precision, recall, ...)
+   - Phân tích ma trận nhầm lẫn
+
+5. **Cải thiện mô hình**
+   - Cắt tỉa cây để tránh overfitting
+   - Thử nghiệm với các đặc trưng khác nhau
+   - Cân nhắc sử dụng mô hình ensemble như Random Forest
+
+## Các lưu ý khi sử dụng Cây quyết định
+
+1. **Độ phức tạp của mô hình**
+   - Cây càng sâu càng dễ overfitting
+   - Cây quá nông có thể underfitting
+
+2. **Xử lý dữ liệu không cân bằng**
+   - Sử dụng kỹ thuật như oversampling, undersampling hoặc SMOTE
+   - Điều chỉnh trọng số cho các lớp
+
+3. **Biến phân loại nhiều giá trị**
+   - Cây quyết định có thể ưu tiên các biến này
+   - Cân nhắc mã hóa hoặc gộp các giá trị
+
+4. **Giải thích kết quả**
+   - Sử dụng cây để rút ra các quy tắc đơn giản
+   - Phân tích tầm quan trọng của các đặc trưng
+
+## So sánh với các phương pháp phân loại khác
+
+| Phương pháp | Độ phức tạp | Hiệu suất | Khả năng giải thích | Ưu điểm | Nhược điểm |
+|-------------|-------------|-----------|----------------------|---------|------------|
+| Decision Tree | Trung bình | Trung bình | Cao | Dễ hiểu, xử lý được nhiều loại dữ liệu | Dễ overfitting, không ổn định |
+| Logistic Regression | Thấp | Trung bình | Cao | Đơn giản, hiệu quả với dữ liệu tuyến tính | Không hiệu quả với dữ liệu phi tuyến |
+| Naive Bayes | Thấp | Trung bình | Cao | Đơn giản, nhanh, hiệu quả với dữ liệu văn bản | Giả định độc lập giữa các đặc trưng |
+| SVM | Cao | Cao | Thấp | Hiệu quả với dữ liệu phức tạp | Khó giải thích, nhạy cảm với tham số |
+| Neural Networks | Rất cao | Rất cao | Rất thấp | Hiệu suất cao với dữ liệu phức tạp | "Hộp đen", yêu cầu nhiều dữ liệu |
+| K-Nearest Neighbors | Thấp | Trung bình | Trung bình | Đơn giản, dễ hiểu | Chậm khi dự đoán, nhạy cảm với dữ liệu nhiễu |
+
+# Ứng dụng Cây quyết định cho bài toán hồi quy
+
+Đến giờ chúng ta đã tập trung vào phân loại, nhưng cây quyết định cũng có thể được sử dụng cho hồi quy.
+
+## Dự đoán giá trị số với Cây quyết định
+
+```{r}
+# Sử dụng mtcars để dự đoán mpg (tiêu thụ nhiên liệu)
+# Chuyển về dạng số
+mtcars_reg <- mtcars
+mtcars_reg$am <- as.numeric(mtcars$am)
+mtcars_reg$vs <- as.numeric(mtcars$vs)
+mtcars_reg$cyl <- as.numeric(mtcars$cyl)
+mtcars_reg$gear <- as.numeric(mtcars$gear)
+mtcars_reg$carb <- as.numeric(mtcars$carb)
+
+# Phân chia dữ liệu
+set.seed(123)
+train_index_reg <- sample(1:nrow(mtcars_reg), 0.7 * nrow(mtcars_reg))
+train_reg <- mtcars_reg[train_index_reg, ]
+test_reg <- mtcars
