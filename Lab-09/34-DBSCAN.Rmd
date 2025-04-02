@@ -218,6 +218,7 @@ library(dbscan)  # Cho thuật toán DBSCAN
 library(factoextra)  # Cho trực quan hóa
 library(fpc)  # Cho đánh giá phân cụm
 library(ggplot2)  # Cho vẽ biểu đồ
+library(cluster)  # Cho hàm silhouette
 
 # Tạo dữ liệu mẫu cho DBSCAN
 set.seed(123)
@@ -243,6 +244,7 @@ y <- c(y1, y2, y3)
 synthetic_data <- data.frame(x = x, y = y)
 
 # Tính khoảng cách k-nearest neighbors
+# Tính khoảng cách k-nearest neighbors
 k <- 4
 knn_dists <- kNNdist(synthetic_data, k = k)
 
@@ -253,11 +255,9 @@ plot(eps_candidates, type = "l",
      ylab = paste("Khoảng cách đến điểm thứ", k, "gần nhất"),
      main = "Phương pháp k-distance")
 
-# Tìm điểm gẩy (có thể bằng thuật toán hoặc quan sát)
-# Ví dụ đơn giản: tìm điểm có độ cong lớn
-eps_diff <- diff(eps_candidates, differences = 2)
-eps_index <- which.max(eps_diff)
-eps_value <- eps_candidates[eps_index]
+# Tìm vị trí của điểm gẩy thủ công (khoảng 0.5)
+eps_value <- 0.5
+eps_index <- which.min(abs(eps_candidates - eps_value))
 
 # Đánh dấu điểm gẩy
 points(eps_index, eps_candidates[eps_index], col = "red", pch = 19)
@@ -265,8 +265,8 @@ text(eps_index, eps_candidates[eps_index],
      labels = paste("ε ≈", round(eps_candidates[eps_index], 2)), 
      pos = 4, col = "red")
 
-# Vẽ đường thẳng tại điểm gẩy
-abline(h = eps_candidates[eps_index], col = "red", lty = 2)
+# Vẽ đường thẳng tại điểm gẩy (thủ công ở mức 0.5)
+abline(h = eps_value, col = "red", lty = 2)
 ```
 
 ## So sánh các tham số khác nhau
@@ -286,7 +286,7 @@ par(mar = c(4, 4, 2, 1))
 for (minPts in minPts_values) {
   for (eps in eps_values) {
     # Áp dụng DBSCAN
-    db <- dbscan(synthetic_data, eps = eps, minPts = minPts)
+    db <- dbscan(synthetic_data, eps = eps, MinPts = minPts)
     
     # Vẽ kết quả
     plot(synthetic_data, col = db$cluster + 1, pch = 20, cex = 0.8,
@@ -317,7 +317,7 @@ Chỉ số Silhouette vẫn có thể được sử dụng cho DBSCAN, nhưng c�
 
 ```{r, fig.cap="Chi so Silhouette cho DBSCAN"}
 # Áp dụng DBSCAN với tham số phù hợp
-db_result <- dbscan(synthetic_data, eps = 0.5, minPts = 5)
+db_result <- dbscan(synthetic_data, eps = 0.5, MinPts = 5)
 
 # Tính Silhouette (chỉ cho các điểm không phải nhiễu)
 non_noise <- which(db_result$cluster > 0)
