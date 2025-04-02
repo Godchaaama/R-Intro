@@ -1,0 +1,93 @@
+---
+title: "Giảm chiều dữ liệu sử dụng PCA"
+author: "Le Nhat Tung"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+    fig_height: 5
+    fig_width: 7
+    highlight: tango
+  html_document: default
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{fontspec}
+  - \setmainfont{Times New Roman}
+---
+
+# Giới thiệu về PCA
+
+## Khái niệm
+
+**Principal Component Analysis (PCA)** là một kỹ thuật giảm chiều được sử dụng rộng rãi trong phân tích dữ liệu và học máy. PCA chuyển đổi một tập dữ liệu có nhiều biến (nhiều chiều) thành một tập dữ liệu với ít biến hơn (ít chiều hơn) nhưng vẫn giữ được thông tin quan trọng nhất.
+
+## Mục tiêu của PCA
+
+PCA có các mục tiêu chính sau:
+
+  * **Giảm số lượng biến:** Chuyển đổi dữ liệu sang không gian mới với ít chiều hơn
+
+  * **Giữ lại thông tin quan trọng:** Các thành phần chính (principal components) mới sẽ giữ lại phần lớn sự biến thiên của dữ liệu gốc
+  
+  * **Loại bỏ đa cộng tuyến:** Các thành phần chính không tương quan với nhau
+  
+  * **Trực quan hóa dữ liệu:** Có thể hiển thị dữ liệu nhiều chiều trên không gian 2D hoặc 3D
+  
+  
+## Quy trình thực hiện PCA
+
+  1. Chuẩn hóa dữ liệu (nếu cần)
+  
+  2. Tính ma trận hiệp phương sai (covariance matrix) hoặc ma trận tương quan (correlation matrix)
+  
+  3. Tính các giá trị riêng (eigenvalues) và vector riêng (eigenvectors) của ma trận
+  
+  4. Sắp xếp các vector riêng theo thứ tự giảm dần của giá trị riêng tương ứng
+  
+  5. Chọn k vector riêng đầu tiên để tạo ma trận chiếu
+  
+  6. Chiếu dữ liệu gốc lên không gian mới k chiều
+  
+# Ứng dụng PCA với bộ dữ liệu mtcars
+
+## Tải thư viện cần thiết
+
+```{r}
+library(tidyverse)   # Bộ thư viện chứa nhiều công cụ xử lý dữ liệu như dplyr, tidyr, ggplot2,... để thao tác và trực quan hóa dữ liệu
+library(ggplot2)     # Thư viện tạo đồ thị với cú pháp ngữ pháp đồ họa (grammar of graphics) giúp tạo biểu đồ chất lượng cao
+#install.packages(GGally)
+library(GGally)      # Mở rộng của ggplot2, cung cấp các hàm để tạo ma trận tương quan, biểu đồ cặp (pair plots) và trực quan hóa nhiều biến
+library(factoextra)  # Thư viện cho phân tích đa chiều, hỗ trợ phân tích thành phần chính (PCA) và phân cụm (clustering)
+
+```
+
+  
+## Hiểu về bộ dữ liệu mtcars
+
+```{r}
+# Xem cấu trúc bộ dữ liệu mtcars
+str(mtcars)
+
+# Hiển thị một số dòng đầu tiên
+head(mtcars)
+
+# Tóm tắt thống kê
+summary(mtcars)
+```
+
+Bộ dữ liệu mtcars chứa thông tin về 32 mẫu xe với 11 biến mô tả các đặc điểm kỹ thuật:
+
+  - mpg: Miles per gallon (hiệu suất tiêu thụ nhiên liệu)
+  - cyl: Số xi-lanh
+  - disp: Dung tích xi-lanh
+  - hp: Mã lực
+  - drat: Tỷ số truyền động sau 
+  - wt: Trọng lượng (1000 lbs)
+  - qsec: Thời gian chạy 1/4 dặm
+  - vs: Kiểu động cơ (0 = chữ V, 1 = thẳng hàng)
+  - am: Kiểu hộp số (0 = tự động, 1 = số sàn)
+  - gear: Số lượng số
+  - carb: Số lượng bộ chế hòa khí
